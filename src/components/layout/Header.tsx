@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/shared/Icons';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import * as React from 'react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -53,6 +54,11 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>
+                  <VisuallyHidden>Navigation Menu</VisuallyHidden>
+                </SheetTitle>
+              </SheetHeader>
               <div className="flex flex-col p-4">
                 <Link href="/" className="mb-8 flex items-center space-x-2" onClick={() => setOpen(false)}>
                   <Icons.logo className="h-6 w-6 text-primary" />
