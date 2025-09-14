@@ -8,8 +8,8 @@ const api = axios.create({
 async function fetchData<T>(endpoint: string, mockData: T): Promise<T> {
   try {
     // We add a check for the baseURL to avoid making requests to an undefined URL
-    if (!api.defaults.baseURL) {
-      console.warn("API baseURL is not set. Returning mock data.");
+    if (!api.defaults.baseURL || api.defaults.baseURL === "https://mock-api.com") {
+      console.warn("API baseURL is not set or is a mock URL. Returning mock data.");
       return mockData;
     }
     const response = await api.get(endpoint);
