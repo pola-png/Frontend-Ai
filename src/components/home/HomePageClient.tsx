@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import type { Prediction, Match } from '@/lib/types';
+import type { Match } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
@@ -81,15 +80,15 @@ export function HomePageClient({ vipPredictions, twoOddsPredictions, fiveOddsPre
                         </TableHeader>
                         <TableBody>
                         {upcomingPredictions.map((p) => (
-                           p.prediction && (
                             <TableRow key={p.id}>
                                 <TableCell className="font-medium">{p.fixture}</TableCell>
                                 <TableCell className="hidden md:table-cell">{p.league}</TableCell>
-                                <TableCell>{p.prediction.prediction}</TableCell>
-                                <TableCell className="text-right">{p.prediction.odds.toFixed(2)}</TableCell>
+                                <TableCell>{p.prediction?.prediction || '-'}</TableCell>
+                                <TableCell className="text-right">
+                                  {p.prediction?.odds !== undefined ? p.prediction.odds.toFixed(2) : '-'}
+                                </TableCell>
                                 <TableCell className="text-right hidden sm:table-cell">{format(new Date(p.date), 'MMM d, HH:mm')}</TableCell>
                             </TableRow>
-                           )
                         ))}
                         </TableBody>
                     </Table>
