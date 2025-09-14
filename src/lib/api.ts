@@ -7,14 +7,19 @@ const api = axios.create({
 
 async function fetchData<T>(endpoint: string, mockData: T): Promise<T> {
   try {
+    // We add a check for the baseURL to avoid making requests to an undefined URL
+    if (!api.defaults.baseURL) {
+      console.warn("API baseURL is not set. Returning mock data.");
+      return mockData;
+    }
     const response = await api.get(endpoint);
     // The API seems to wrap data in a `data` property
     return response.data.data || response.data;
   } catch (error) {
     console.error(`Error fetching ${endpoint}:`, error);
     // In a real-world scenario, you might want to handle this more gracefully
-    // For now, we return an empty array to prevent the app from crashing.
-    return [] as T;
+    // For now, we return mock data to prevent the app from crashing.
+    return mockData;
   }
 }
 
