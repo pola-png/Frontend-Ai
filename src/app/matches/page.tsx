@@ -1,8 +1,19 @@
-import { getMatches } from '@/lib/api';
+import { getDashboard } from '@/lib/api';
 import { MatchInfoCard } from '@/components/shared/MatchInfoCard';
+import { Match } from '@/lib/types';
 
 export default async function MatchesPage() {
-  const matches = await getMatches();
+  const { upcomingPredictions } = await getDashboard();
+  
+  // The dashboard gives us predictions, we need to adapt them to what MatchInfoCard expects for a "match"
+  const matches: Match[] = (upcomingPredictions || []).map(p => ({
+    id: p.id,
+    fixture: p.fixture,
+    league: p.league,
+    date: p.date,
+    teams: p.teams,
+  }));
+
   const sortedMatches = matches.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (

@@ -46,3 +46,11 @@ export interface Result {
   prediction: string;
   outcome: 'won' | 'lost';
 }
+
+export interface DashboardData {
+  vipPredictions: Prediction[];
+  twoOddsPredictions: Prediction[];
+  fiveOddsPredictions: Prediction[];
+  bigOddsPredictions: Prediction[];
+  upcomingPredictions: Prediction[];
+}

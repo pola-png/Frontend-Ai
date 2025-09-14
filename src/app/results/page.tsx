@@ -3,7 +3,7 @@ import { MatchInfoCard } from '@/components/shared/MatchInfoCard';
 
 export default async function ResultsPage() {
   const results = await getResults();
-  const sortedResults = results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedResults = (results || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="container mx-auto px-4 py-8">
