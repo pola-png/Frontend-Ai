@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Prediction } from '@/lib/types';
+import type { Prediction, Match } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
@@ -14,7 +14,7 @@ interface HomePageClientProps {
   twoOddsPredictions: Prediction[];
   fiveOddsPredictions: Prediction[];
   bigOddsPredictions: Prediction[];
-  upcomingPredictions: Prediction[];
+  upcomingPredictions: Match[];
 }
 
 const PredictionCarousel = ({ title, predictions, icon: Icon }: { title: string; predictions: Prediction[]; icon: React.ElementType }) => {
@@ -65,7 +65,7 @@ export function HomePageClient({ vipPredictions, twoOddsPredictions, fiveOddsPre
       {upcomingPredictions.length > 0 && (
           <Card className="shadow-lg border-none">
             <CardHeader>
-                <CardTitle className="text-xl font-bold">Upcoming Predictions</CardTitle>
+                <CardTitle className="text-xl font-bold">Upcoming Matches</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="overflow-x-auto">
@@ -74,8 +74,6 @@ export function HomePageClient({ vipPredictions, twoOddsPredictions, fiveOddsPre
                         <TableRow>
                             <TableHead>Fixture</TableHead>
                             <TableHead className="hidden md:table-cell">League</TableHead>
-                            <TableHead>Prediction</TableHead>
-                            <TableHead className="text-right">Odds</TableHead>
                             <TableHead className="text-right hidden sm:table-cell">Date</TableHead>
                         </TableRow>
                         </TableHeader>
@@ -84,8 +82,6 @@ export function HomePageClient({ vipPredictions, twoOddsPredictions, fiveOddsPre
                             <TableRow key={p.id}>
                                 <TableCell className="font-medium">{p.fixture}</TableCell>
                                 <TableCell className="hidden md:table-cell">{p.league}</TableCell>
-                                <TableCell>{p.prediction}</TableCell>
-                                <TableCell className="text-right">{p.odds.toFixed(2)}</TableCell>
                                 <TableCell className="text-right hidden sm:table-cell">{format(new Date(p.date), 'MMM d, HH:mm')}</TableCell>
                             </TableRow>
                         ))}
