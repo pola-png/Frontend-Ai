@@ -6,20 +6,6 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-const fetchData = async <T>(endpoint: string): Promise<T | []> => {
-  try {
-    if (!api.defaults.baseURL) {
-      console.warn('API baseURL is not set. Returning empty array.');
-      return [];
-    }
-    const response = await api.get(endpoint);
-    return response.data || [];
-  } catch (error) {
-    console.error(`Error fetching ${endpoint}:`, error);
-    return [];
-  }
-}
-
 // --- Dashboard ---
 export const getDashboard = async (): Promise<DashboardData> => {
   const res = await api.get("/api/dashboard");
