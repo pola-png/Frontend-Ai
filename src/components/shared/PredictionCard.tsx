@@ -1,12 +1,12 @@
-import { Prediction } from '@/lib/types';
+import { Match } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
-import { Flame, ShieldCheck, XCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Flame, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { GenerateExplanationDialog } from './GenerateExplanationDialog';
 
-const StatusIcon = ({ status }: { status: Prediction['status'] }) => {
+const StatusIcon = ({ status }: { status: Match['prediction']['status'] }) => {
   switch (status) {
     case 'won':
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
@@ -18,8 +18,14 @@ const StatusIcon = ({ status }: { status: Prediction['status'] }) => {
   }
 };
 
-export function PredictionCard({ prediction }: { prediction: Prediction }) {
-  const { teams, fixture, league, date, odds, prediction: predText, status, is_vip } = prediction;
+export function PredictionCard({ match }: { match: Match }) {
+  const { fixture, league, date, teams, prediction } = match;
+
+  if (!prediction) {
+    return null; // Or some fallback UI
+  }
+  
+  const { odds, prediction: predText, status, is_vip } = prediction;
   const homeTeam = teams.home;
   const awayTeam = teams.away;
 
@@ -60,7 +66,7 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
             <span className="text-sm text-muted-foreground">Odds</span>
         </div>
         <div className="flex items-center gap-4">
-          <GenerateExplanationDialog prediction={prediction} />
+          <GenerateExplanationDialog match={match} />
           <StatusIcon status={status} />
         </div>
       </CardFooter>

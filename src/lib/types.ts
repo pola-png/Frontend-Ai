@@ -27,6 +27,7 @@ export interface Match {
     home: string;
     away: string;
   };
+  prediction?: Prediction; // A match can have an associated prediction
 }
 
 export interface Result {

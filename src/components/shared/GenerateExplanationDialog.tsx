@@ -11,26 +11,30 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { getExplanationAction } from '@/app/actions';
-import { Prediction } from '@/lib/types';
+import { Match } from '@/lib/types';
 import { Sparkles } from 'lucide-react';
 import { Icons } from './Icons';
 import { ScrollArea } from '../ui/scroll-area';
 
-export function GenerateExplanationDialog({ prediction }: { prediction: Prediction }) {
+export function GenerateExplanationDialog({ match }: { match: Match }) {
   const [explanation, setExplanation] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
 
   const handleGenerate = async () => {
+    if (!match.prediction) {
+      setError('No prediction data available to generate an explanation.');
+      return;
+    }
     setIsLoading(true);
     setError('');
     setExplanation('');
     const result = await getExplanationAction({
-      team1: prediction.teams.home,
-      team2: prediction.teams.away,
-      prediction: prediction.prediction,
-      relevantStats: prediction.analysis,
+      team1: match.teams.home,
+      team2: match.teams.away,
+      prediction: match.prediction.prediction,
+      relevantStats: match.prediction.analysis,
     });
     setIsLoading(false);
     if ('error' in result) {
@@ -43,7 +47,7 @@ export function GenerateExplanationDialog({ prediction }: { prediction: Predicti
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Generate AI Explanation">
+        <Button variant="ghost" size="icon" aria-label="Generate AI Explanation" disabled={!match.prediction}>
           <Sparkles className="h-5 w-5 text-primary" />
         </Button>
       </DialogTrigger>
@@ -54,7 +58,7 @@ export function GenerateExplanationDialog({ prediction }: { prediction: Predicti
             AI Prediction Analysis
           </DialogTitle>
           <DialogDescription>
-            AI-generated explanation for the prediction on {prediction.fixture}.
+            AI-generated explanation for the prediction on {match.fixture}.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] pr-4">

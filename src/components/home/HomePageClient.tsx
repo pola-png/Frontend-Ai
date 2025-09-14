@@ -10,14 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { format } from 'date-fns';
 
 interface HomePageClientProps {
-  vipPredictions: Prediction[];
-  twoOddsPredictions: Prediction[];
-  fiveOddsPredictions: Prediction[];
-  bigOddsPredictions: Prediction[];
+  vipPredictions: Match[];
+  twoOddsPredictions: Match[];
+  fiveOddsPredictions: Match[];
+  bigOddsPredictions: Match[];
   upcomingPredictions: Match[];
 }
 
-const PredictionCarousel = ({ title, predictions, icon: Icon }: { title: string; predictions: Prediction[]; icon: React.ElementType }) => {
+const PredictionCarousel = ({ title, predictions, icon: Icon }: { title: string; predictions: Match[]; icon: React.ElementType }) => {
   if (predictions.length === 0) return null;
   return (
     <Card className="shadow-lg border-none">
@@ -33,7 +33,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon }: { title: string;
             {predictions.map((p) => (
               <CarouselItem key={p.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
-                  <PredictionCard prediction={p} />
+                  <PredictionCard match={p} />
                 </div>
               </CarouselItem>
             ))}
@@ -65,7 +65,7 @@ export function HomePageClient({ vipPredictions, twoOddsPredictions, fiveOddsPre
       {upcomingPredictions.length > 0 && (
           <Card className="shadow-lg border-none">
             <CardHeader>
-                <CardTitle className="text-xl font-bold">Upcoming Matches</CardTitle>
+                <CardTitle className="text-xl font-bold">Upcoming Predictions</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="overflow-x-auto">
@@ -74,16 +74,22 @@ export function HomePageClient({ vipPredictions, twoOddsPredictions, fiveOddsPre
                         <TableRow>
                             <TableHead>Fixture</TableHead>
                             <TableHead className="hidden md:table-cell">League</TableHead>
+                            <TableHead>Prediction</TableHead>
+                            <TableHead className="text-right">Odds</TableHead>
                             <TableHead className="text-right hidden sm:table-cell">Date</TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
                         {upcomingPredictions.map((p) => (
+                           p.prediction && (
                             <TableRow key={p.id}>
                                 <TableCell className="font-medium">{p.fixture}</TableCell>
                                 <TableCell className="hidden md:table-cell">{p.league}</TableCell>
+                                <TableCell>{p.prediction.prediction}</TableCell>
+                                <TableCell className="text-right">{p.prediction.odds.toFixed(2)}</TableCell>
                                 <TableCell className="text-right hidden sm:table-cell">{format(new Date(p.date), 'MMM d, HH:mm')}</TableCell>
                             </TableRow>
+                           )
                         ))}
                         </TableBody>
                     </Table>
