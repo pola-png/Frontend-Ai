@@ -20,6 +20,6 @@ async function fetchData<T>(endpoint: string): Promise<T[]> {
   }
 }
 
-export const getPredictions = () => fetchData<Prediction>('/api/predictions');
-export const getMatches = () => fetchData<Match>('/api/matches');
-export const getResults = () => fetchData<Result>('/api/results');
+export const getPredictions = () => fetchData<Prediction>('/predictions');
+export const getMatches = () => fetchData<Match>('/matches');
+export const getResults = () => fetchData<Result>('/results');
