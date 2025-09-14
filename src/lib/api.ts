@@ -1,4 +1,4 @@
-import type { Prediction, Match, Result } from './types';
+import type { Prediction, Match, Result, DashboardData } from './types';
 import axios from 'axios';
 
 const api = axios.create({
@@ -20,15 +20,10 @@ async function fetchData<T>(endpoint: string): Promise<T> {
   }
 }
 
-export const getDashboard = () => fetchData<any>('/api/dashboard');
+export const getDashboard = () => fetchData<DashboardData>('/api/dashboard');
 
 export const getPredictionsByBucket = (bucket: string) => fetchData<Prediction[]>(`/api/predictions/${bucket}`);
 
 export const getResults = () => fetchData<Result[]>('/api/results');
 
 export const getMatchSummary = (id: string) => fetchData<any>(`/api/match/${id}/summary`);
-
-// The following functions are now potentially obsolete if getDashboard provides all the necessary data.
-// They can be kept for pages that might still use them or removed if no longer needed.
-export const getPredictions = () => fetchData<Prediction[]>('/api/predictions');
-export const getMatches = () => fetchData<Match[]>('/api/matches');
