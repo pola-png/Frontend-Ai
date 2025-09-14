@@ -5,10 +5,10 @@ import { HomePageClient } from '@/components/home/HomePageClient';
 export default async function Home() {
   const dashboardData = await getDashboard();
   
-  const vipPredictions: Match[] = await getPredictionsByBucket('vip');
-  const twoOddsPredictions: Match[] = await getPredictionsByBucket('2odds');
-  const fiveOddsPredictions: Match[] = await getPredictionsByBucket('5odds');
-  const bigOddsPredictions: Match[] = await getPredictionsByBucket('big10');
+  const vipPredictions = await getPredictionsByBucket('vip');
+  const twoOddsPredictions = await getPredictionsByBucket('2odds');
+  const fiveOddsPredictions = await getPredictionsByBucket('5odds');
+  const bigOddsPredictions = await getPredictionsByBucket('big10');
 
   const upcomingPredictions: Match[] = dashboardData.upcomingMatches || [];
 

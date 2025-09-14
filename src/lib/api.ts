@@ -1,28 +1,45 @@
-import type { Prediction, Match, Result } from './types';
-import axios from 'axios';
+import axios from "axios";
+import type { Match, Result, DashboardData } from './types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  headers: { "Content-Type": "application/json" },
 });
 
-async function fetchData<T>(endpoint: string): Promise<T> {
+const fetchData = async <T>(endpoint: string): Promise<T | []> => {
   try {
     if (!api.defaults.baseURL) {
-      console.warn('API baseURL is not set. Returning empty array/object.');
-      // Based on what different endpoints return, we might need a more flexible default
-      return Array.isArray([]) ? ([] as T) : ({} as T) ;
+      console.warn('API baseURL is not set. Returning empty array.');
+      return [];
     }
     const response = await api.get(endpoint);
-    return response.data || ([] as T);
+    return response.data || [];
   } catch (error) {
     console.error(`Error fetching ${endpoint}:`, error);
-    // Return a sensible default based on expected type
-    return Array.isArray([]) ? ([] as T) : ({} as T);
+    return [];
   }
 }
 
-// Specific API helpers based on the backend routes
-export const getDashboard = () => fetchData<{ upcomingMatches: Match[], recentResults: Result[], bucketCounts: Record<string, number> }>("/api/dashboard");
-export const getPredictionsByBucket = (bucket: string) => fetchData<Prediction[]>(`/api/predictions/${bucket}`);
-export const getResults = () => fetchData<Result[]>("/api/results");
-export const getMatchSummary = (id: string) => fetchData<{ summary: string }>(`/api/match/${id}/summary`);
+// --- Dashboard ---
+export const getDashboard = async (): Promise<DashboardData> => {
+  const res = await api.get("/api/dashboard");
+  return res.data || { upcomingMatches: [], recentResults: [], bucketCounts: {} };
+};
+
+// --- Predictions by bucket ---
+export const getPredictionsByBucket = async (bucket: string): Promise<Match[]> => {
+  const res = await api.get(`/api/predictions/${bucket}`);
+  return res.data || [];
+};
+
+// --- Results ---
+export const getResults = async (): Promise<Result[]> => {
+  const res = await api.get("/api/results");
+  return res.data || [];
+};
+
+// --- Match Summary ---
+export const getMatchSummary = async (matchId: string): Promise<{ summary: string }> => {
+  const res = await api.get(`/api/summary/${matchId}`);
+  return res.data || { summary: '' };
+};
