@@ -48,9 +48,7 @@ export interface Result {
 }
 
 export interface DashboardData {
-  vipPredictions: Prediction[];
-  twoOddsPredictions: Prediction[];
-  fiveOddsPredictions: Prediction[];
-  bigOddsPredictions: Prediction[];
-  upcomingPredictions: Prediction[];
+  upcomingMatches: Match[];
+  recentResults: Result[];
+  bucketCounts: Record<string, number>;
 }
