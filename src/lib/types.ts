@@ -29,10 +29,12 @@ export interface Outcomes {
   [k: string]: any;
 }
 
+// This interface represents a "normalized" prediction object,
+// where match details are flattened for easier UI consumption.
 export interface Prediction {
   _id: string;
-  matchId: string | Match; // Can be a string or a populated Match object
-  prediction?: string; // The textual prediction, e.g. "Home Win"
+  matchId: string; 
+  prediction?: string; 
   outcomes?: Outcomes;
   odds?: number;
   confidence?: number;
@@ -41,17 +43,17 @@ export interface Prediction {
   is_vip?: boolean;
   analysis?: string;
   
-  // Flattened properties from Match for UI convenience
-  homeTeam?: Team;
-  awayTeam?: Team;
-  league?: string;
-  matchDateUtc?: string;
+  // --- Flattened properties from Match for UI convenience ---
+  homeTeam: Team;
+  awayTeam: Team;
+  league: string;
+  matchDateUtc: string;
 }
 
 export interface Match {
   _id: string;
-  fixture: string;
-  league: string;
+  fixture?: string;
+  league?: string;
   matchDateUtc: string;
   status: 'scheduled' | 'upcoming' | 'tba' | 'finished';
   homeTeam: Team | string;
@@ -60,7 +62,7 @@ export interface Match {
     home: number;
     away: number;
   };
-  // A match can have multiple predictions from different buckets
+  // A match can have multiple predictions from different buckets, as returned by /matches/upcoming
   predictions?: Prediction[];
   // For the results page, a single relevant prediction might be attached
   prediction?: Prediction; 

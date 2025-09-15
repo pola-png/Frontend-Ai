@@ -15,6 +15,19 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
   const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : homeTeam;
   const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : awayTeam;
 
+  // Function to determine prediction text if not available
+  const getPredictionText = (prediction: any) => {
+    if (prediction.prediction) return prediction.prediction;
+    if (prediction.outcomes?.oneXTwo) {
+      const { home, draw, away } = prediction.outcomes.oneXTwo;
+      const maxVal = Math.max(home, draw, away);
+      if (maxVal === home) return 'Home Win';
+      if (maxVal === away) return 'Away Win';
+      return 'Draw';
+    }
+    return 'N/A';
+  }
+
   return (
     <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300 border-border/20">
       <CardHeader>
@@ -45,7 +58,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
               {predictions.map(p => p && (
                 <Badge key={p._id} variant="secondary" className="flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3 text-green-500" />
-                  {p.prediction}
+                   {getPredictionText(p)}
                   {p.bucket && <span className="font-normal opacity-75">({p.bucket})</span>}
                 </Badge>
               ))}

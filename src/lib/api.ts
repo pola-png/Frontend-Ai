@@ -9,7 +9,7 @@ const api = axios.create({
 /**
  * Normalizes predictions from endpoints where match data is nested inside `matchId`.
  * This function flattens the structure so UI components can easily access match details.
- * e.g., prediction.homeTeam.name instead of prediction.matchId.homeTeam.name
+ * It also determines the primary prediction text and odds from the `oneXTwo` outcomes.
  */
 const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
   if (!Array.isArray(predictionGroups)) {
@@ -18,27 +18,29 @@ const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
   }
 
   return predictionGroups.flat().map(p => {
-    if (!p || !p.matchId) return null;
+    if (!p || !p.matchId || typeof p.matchId !== 'object') return null;
 
     const match = p.matchId;
     const homeTeam = typeof match.homeTeam === 'object' ? match.homeTeam : { name: match.homeTeam || 'Home' };
     const awayTeam = typeof match.awayTeam === 'object' ? match.awayTeam : { name: match.awayTeam || 'Away' };
     
-    // Determine the textual prediction if not present
     let textualPrediction = p.prediction;
     let predictionOdds = p.odds;
 
-    if (!textualPrediction && p.outcomes?.oneXTwo) {
+    // Determine the textual prediction and odds if not explicitly present
+    if ((!textualPrediction || !predictionOdds) && p.outcomes?.oneXTwo) {
       const { home, draw, away } = p.outcomes.oneXTwo;
       const maxOddValue = Math.max(home, draw, away);
       
-      if (maxOddValue === home) textualPrediction = 'Home Win';
-      else if (maxOddValue === away) textualPrediction = 'Away Win';
-      else textualPrediction = 'Draw';
-
-      // Set odds to the highest probability value if not explicitly present
-      if (!predictionOdds) {
-        predictionOdds = maxOddValue;
+      if (maxOddValue === home) {
+        textualPrediction = 'Home Win';
+        predictionOdds = home;
+      } else if (maxOddValue === away) {
+        textualPrediction = 'Away Win';
+        predictionOdds = away;
+      } else {
+        textualPrediction = 'Draw';
+        predictionOdds = draw;
       }
     }
 
