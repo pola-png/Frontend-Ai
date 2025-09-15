@@ -6,21 +6,25 @@ import { getDashboard } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
-import { Crown, Trophy, Gem, Rocket } from 'lucide-react';
+import { Crown, Trophy, Gem, Rocket, ArrowRight } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '../ui/button';
 
-const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading, error }: { title: string; predictions: Match[]; icon: React.ElementType; isLoading: boolean; error?: boolean }) => {
+const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, error }: { title: string; predictions: Match[]; icon: React.ElementType; link: string, isLoading: boolean; error?: boolean }) => {
   if (isLoading) {
     return (
       <Card className="shadow-lg border-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-bold text-primary">
-            <Icon className="h-6 w-6" />
-            {title}
+          <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
+            <div className="flex items-center gap-2">
+              <Icon className="h-6 w-6" />
+              {title}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex gap-4">
@@ -48,9 +52,17 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading, error }
   return (
     <Card className="shadow-lg border-none">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl font-bold text-primary">
-          <Icon className="h-6 w-6" />
-          {title}
+        <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
+          <div className='flex items-center gap-2'>
+            <Icon className="h-6 w-6" />
+            {title}
+          </div>
+          <Link href={link} passHref>
+             <Button variant="ghost" size="sm" className="text-sm font-medium">
+              View all
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -110,14 +122,16 @@ export function HomePageClient() {
       </div>
     );
   }
+  
+  const upcomingPredictions = (data?.upcomingMatches || []).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5);
 
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <PredictionCarousel title="VIP Picks" predictions={data?.vipPredictions || []} icon={Crown} isLoading={loading} />
-        <PredictionCarousel title="Daily 2+ Odds" predictions={data?.twoOddsPredictions || []} icon={Trophy} isLoading={loading} />
-        <PredictionCarousel title="Value 5+ Odds" predictions={data?.fiveOddsPredictions || []} icon={Gem} isLoading={loading} />
-        <PredictionCarousel title="Big 10+ Odds" predictions={data?.bigOddsPredictions || []} icon={Rocket} isLoading={loading} />
+        <PredictionCarousel title="VIP Picks" predictions={data?.vipPredictions || []} icon={Crown} link="/predictions/vip" isLoading={loading} />
+        <PredictionCarousel title="Daily 2+ Odds" predictions={data?.twoOddsPredictions || []} icon={Trophy} link="/predictions/2odds" isLoading={loading} />
+        <PredictionCarousel title="Value 5+ Odds" predictions={data?.fiveOddsPredictions || []} icon={Gem} link="/predictions/5odds" isLoading={loading} />
+        <PredictionCarousel title="Big 10+ Odds" predictions={data?.bigOddsPredictions || []} icon={Rocket} link="/predictions/big10" isLoading={loading} />
       </div>
 
       <Card className="shadow-lg border-none">
@@ -147,8 +161,8 @@ export function HomePageClient() {
                           <TableCell className="text-right hidden sm:table-cell"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
                         </TableRow>
                       ))
-                    ) : data?.upcomingMatches && data.upcomingMatches.length > 0 ? (
-                      data.upcomingMatches.map((p) => (
+                    ) : upcomingPredictions.length > 0 ? (
+                      upcomingPredictions.map((p) => (
                         <TableRow key={p._id}>
                             <TableCell className="font-medium">{p.fixture}</TableCell>
                             <TableCell className="hidden md:table-cell">{p.league}</TableCell>

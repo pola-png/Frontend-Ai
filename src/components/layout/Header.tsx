@@ -6,15 +6,63 @@ import { cn } from '@/lib/utils';
 import { Icons } from '@/components/shared/Icons';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { ChevronDown, Menu } from 'lucide-react';
 import * as React from 'react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-const navItems = [
+const mainNavItems = [
   { href: '/', label: 'Home' },
   { href: '/matches', label: 'Matches' },
   { href: '/results', label: 'Results' },
 ];
+
+const predictionNavItems = [
+  { href: '/predictions/vip', label: 'VIP Picks' },
+  { href: '/predictions/2odds', label: 'Daily 2+ Odds' },
+  { href: '/predictions/5odds', label: 'Value 5+ Odds' },
+  { href: '/predictions/big10', label: 'Big 10+ Odds' },
+];
+
+function MainNav() {
+  const pathname = usePathname();
+  return (
+    <>
+      {mainNavItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={cn(
+            'transition-colors hover:text-foreground/80',
+            pathname === item.href ? 'text-foreground' : 'text-foreground/60'
+          )}
+        >
+          {item.label}
+        </Link>
+      ))}
+      <DropdownMenu>
+        <DropdownMenuTrigger className={cn(
+          'flex items-center gap-1 transition-colors hover:text-foreground/80',
+          predictionNavItems.some(item => pathname.startsWith(item.href)) ? 'text-foreground' : 'text-foreground/60'
+        )}>
+          Predictions <ChevronDown className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {predictionNavItems.map((item) => (
+            <DropdownMenuItem key={item.href} asChild>
+              <Link href={item.href}>{item.label}</Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
+}
 
 export default function Header() {
   const pathname = usePathname();
@@ -31,18 +79,7 @@ export default function Header() {
         </div>
 
         <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'transition-colors hover:text-foreground/80',
-                pathname === item.href ? 'text-foreground' : 'text-foreground/60'
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          <MainNav />
         </nav>
 
         <div className="flex flex-1 items-center justify-end md:hidden">
@@ -65,13 +102,27 @@ export default function Header() {
                   <span className="font-bold">SureBet Scout</span>
                 </Link>
                 <nav className="flex flex-col space-y-4">
-                  {navItems.map((item) => (
+                  {mainNavItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
                         'text-lg transition-colors hover:text-foreground/80',
+                        pathname === item.href ? 'text-foreground' : 'text-foreground/60'
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                   <div className="text-lg text-foreground/60">Predictions</div>
+                   {predictionNavItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        'pl-4 text-lg transition-colors hover:text-foreground/80',
                         pathname === item.href ? 'text-foreground' : 'text-foreground/60'
                       )}
                     >
