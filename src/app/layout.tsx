@@ -5,8 +5,8 @@ import Header from '@/components/layout/Header';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'SureBet Scout',
-  description: 'AI-powered soccer match predictions and insights.',
+  title: 'AI Football Prediction',
+  description: 'AI-powered football match predictions and insights.',
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

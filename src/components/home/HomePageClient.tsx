@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Match } from '@/lib/types';
-import { getPredictionsByBucket } from '@/lib/api';
+import { getPredictionsByBucket, getUpcomingMatches } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
@@ -13,84 +13,84 @@ import { Button } from '../ui/button';
 
 const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, emptyMessage }: { title: string; predictions: Match[]; icon: React.ElementType; link: string, isLoading: boolean; emptyMessage: string; }) => {
   return (
-    <Card className="shadow-lg border-none bg-card">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
-          <div className='flex items-center gap-2'>
-            <Icon className="h-6 w-6" />
-            {title}
-          </div>
-          <Link href={link} passHref>
-             <Button variant="ghost" size="sm" className="text-sm font-medium">
+    <Card className="shadow-lg border-none bg-card hover:bg-muted/50 transition-colors duration-300">
+      <Link href={link} passHref className="flex flex-col h-full">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
+            <div className='flex items-center gap-2'>
+              <Icon className="h-6 w-6" />
+              {title}
+            </div>
+            <Button variant="ghost" size="sm" className="text-sm font-medium">
               View all
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-           <Carousel opts={{ align: 'start', loop: false }} className="w-full">
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+             <Carousel opts={{ align: 'start', loop: false }} className="w-full">
+                <CarouselContent className="-ml-4">
+                  {[...Array(3)].map((_, i) => (
+                    <CarouselItem key={i} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                      <div className="p-1 space-y-2">
+                        <Skeleton className="h-56 w-full" />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+             </Carousel>
+          ) : predictions.length > 0 ? (
+            <Carousel opts={{ align: 'start', loop: predictions.length > 3 }} className="w-full">
               <CarouselContent className="-ml-4">
-                {[...Array(3)].map((_, i) => (
-                  <CarouselItem key={i} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1 space-y-2">
-                      <Skeleton className="h-56 w-full" />
+                {predictions.map((p) => (
+                  <CarouselItem key={p._id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1">
+                      <PredictionCard match={p} />
                     </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
-           </Carousel>
-        ) : predictions.length > 0 ? (
-          <Carousel opts={{ align: 'start', loop: predictions.length > 3 }} className="w-full">
-            <CarouselContent className="-ml-4">
-              {predictions.map((p) => (
-                <CarouselItem key={p._id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1">
-                    <PredictionCard match={p} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {predictions.length > 3 && (
-              <>
-                <CarouselPrevious className="hidden sm:flex" />
-                <CarouselNext className="hidden sm:flex" />
-              </>
-            )}
-          </Carousel>
-        ) : (
-          <div className="flex justify-center items-center h-40 bg-muted/50 rounded-lg">
-              <p className="text-muted-foreground text-center px-4">{emptyMessage}</p>
-          </div>
-        )}
-      </CardContent>
+              {predictions.length > 3 && (
+                <>
+                  <CarouselPrevious className="hidden sm:flex" />
+                  <CarouselNext className="hidden sm:flex" />
+                </>
+              )}
+            </Carousel>
+          ) : (
+            <div className="flex justify-center items-center h-40 bg-muted/50 rounded-lg">
+                <p className="text-muted-foreground text-center px-4">{emptyMessage}</p>
+            </div>
+          )}
+        </CardContent>
+      </Link>
     </Card>
   );
 };
 
 const DashboardCard = ({ title, icon: Icon, link, description }: { title: string; icon: React.ElementType; link: string; description: string; }) => {
   return (
-    <Card className="shadow-lg border-none bg-card">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
-          <div className='flex items-center gap-2'>
-            <Icon className="h-6 w-6" />
-            {title}
-          </div>
-          <Link href={link} passHref>
+     <Card className="shadow-lg border-none bg-card hover:bg-muted/50 transition-colors duration-300">
+      <Link href={link} passHref className="flex flex-col h-full">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
+            <div className='flex items-center gap-2'>
+              <Icon className="h-6 w-6" />
+              {title}
+            </div>
              <Button variant="ghost" size="sm" className="text-sm font-medium">
               View all
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-center items-center h-40 bg-muted/50 rounded-lg">
-            <p className="text-muted-foreground text-center px-4">{description}</p>
-        </div>
-      </CardContent>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center items-center h-40 bg-muted/50 rounded-lg">
+              <p className="text-muted-foreground text-center px-4">{description}</p>
+          </div>
+        </CardContent>
+      </Link>
     </Card>
   );
 };
@@ -102,62 +102,63 @@ export function HomePageClient() {
   const [fiveOddsPredictions, setFiveOddsPredictions] = useState<Match[]>([]);
   const [bigOddsPredictions, setBigOddsPredictions] = useState<Match[]>([]);
   
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingVip, setLoadingVip] = useState(true);
+  const [loadingTwoOdds, setLoadingTwoOdds] = useState(true);
+  const [loadingFiveOdds, setLoadingFiveOdds] = useState(true);
+  const [loadingBigOdds, setLoadingBigOdds] = useState(true);
 
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchVip = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        
-        const [
-          vipData, 
-          twoData, 
-          fiveData, 
-          bigData, 
-        ] = await Promise.all([
-          getPredictionsByBucket("vip"),
-          getPredictionsByBucket("2odds"),
-          getPredictionsByBucket("5odds"),
-          getPredictionsByBucket("big10"),
-        ]);
-
+        setLoadingVip(true);
+        const vipData = await getPredictionsByBucket("vip");
         setVipPredictions(vipData || []);
-        setTwoOddsPredictions(twoData || []);
-        setFiveOddsPredictions(fiveData || []);
-        setBigOddsPredictions(bigData || []);
-
-      } catch (err) {
-        console.error("Failed to fetch homepage data:", err);
-        setError("Could not load prediction data. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
+      } catch (err) { console.error("Failed to fetch vip predictions", err); } 
+      finally { setLoadingVip(false); }
     };
     
-    fetchAllData();
+    const fetchTwoOdds = async () => {
+      try {
+        setLoadingTwoOdds(true);
+        const twoData = await getPredictionsByBucket("2odds");
+        setTwoOddsPredictions(twoData || []);
+      } catch (err) { console.error("Failed to fetch 2odds predictions", err); }
+      finally { setLoadingTwoOdds(false); }
+    };
+    
+    const fetchFiveOdds = async () => {
+      try {
+        setLoadingFiveOdds(true);
+        const fiveData = await getPredictionsByBucket("5odds");
+        setFiveOddsPredictions(fiveData || []);
+      } catch (err) { console.error("Failed to fetch 5odds predictions", err); }
+      finally { setLoadingFiveOdds(false); }
+    };
+    
+    const fetchBigOdds = async () => {
+      try {
+        setLoadingBigOdds(true);
+        const bigData = await getPredictionsByBucket("big10");
+        setBigOddsPredictions(bigData || []);
+      } catch (err) { console.error("Failed to fetch big10 predictions", err); }
+      finally { setLoadingBigOdds(false); }
+    };
+    
+    fetchVip();
+    fetchTwoOdds();
+    fetchFiveOdds();
+    fetchBigOdds();
   }, []);
 
   return (
     <div className="space-y-12">
-       {error && (
-        <Card className="bg-destructive/10 border-destructive text-destructive-foreground">
-          <CardHeader>
-            <CardTitle>Something went wrong</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{error}</p>
-          </CardContent>
-        </Card>
-      )}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <PredictionCarousel 
           title="VIP Picks" 
           predictions={vipPredictions} 
           icon={Crown} 
           link="/predictions/vip" 
-          isLoading={loading}
+          isLoading={loadingVip}
           emptyMessage="No VIP predictions available at the moment."
         />
         <PredictionCarousel 
@@ -165,7 +166,7 @@ export function HomePageClient() {
           predictions={twoOddsPredictions} 
           icon={Trophy} 
           link="/predictions/2odds" 
-          isLoading={loading} 
+          isLoading={loadingTwoOdds} 
           emptyMessage="No 2+ odds predictions found for today."
         />
         <PredictionCarousel 
@@ -173,7 +174,7 @@ export function HomePageClient() {
           predictions={fiveOddsPredictions} 
           icon={Gem} 
           link="/predictions/5odds" 
-          isLoading={loading} 
+          isLoading={loadingFiveOdds} 
           emptyMessage="No 5+ odds value picks available right now."
         />
         <PredictionCarousel 
@@ -181,7 +182,7 @@ export function HomePageClient() {
           predictions={bigOddsPredictions} 
           icon={Rocket} 
           link="/predictions/big10" 
-          isLoading={loading} 
+          isLoading={loadingBigOdds} 
           emptyMessage="No high-risk, high-reward 10+ odds picks found."
         />
         <DashboardCard 
