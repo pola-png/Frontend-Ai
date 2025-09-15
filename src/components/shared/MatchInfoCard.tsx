@@ -52,20 +52,22 @@ export function MatchInfoCard({ item, type }: MatchInfoCardProps) {
         {isResult && 'prediction' in item && item.prediction && (
           <div className="text-center pt-2">
             <p className="text-xs text-muted-foreground">Prediction: {item.prediction}</p>
-            <Badge
-              variant={item.outcome === 'won' ? 'default' : 'destructive'}
-              className={cn(
-                'mt-1',
-                item.outcome === 'won' ? 'bg-green-500/20 text-green-700 border-green-500/30' : 'bg-red-500/20 text-red-700 border-red-500/30'
-              )}
-            >
-              {item.outcome === 'won' ? (
-                <ShieldCheck className="mr-1 h-3 w-3" />
-              ) : (
-                <XCircle className="mr-1 h-3 w-3" />
-              )}
-              {item.outcome.charAt(0).toUpperCase() + item.outcome.slice(1)}
-            </Badge>
+            {'outcome' in item && (
+              <Badge
+                variant={item.outcome === 'won' ? 'default' : 'destructive'}
+                className={cn(
+                  'mt-1',
+                  item.outcome === 'won' ? 'bg-green-500/20 text-green-700 border-green-500/30' : 'bg-red-500/20 text-red-700 border-red-500/30'
+                )}
+              >
+                {item.outcome === 'won' ? (
+                  <ShieldCheck className="mr-1 h-3 w-3" />
+                ) : (
+                  <XCircle className="mr-1 h-3 w-3" />
+                )}
+                {item.outcome.charAt(0).toUpperCase() + item.outcome.slice(1)}
+              </Badge>
+            )}
           </div>
         )}
       </CardContent>

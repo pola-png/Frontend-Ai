@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getDashboard } from '@/lib/api';
+import { getUpcomingMatches } from '@/lib/api';
 import { MatchInfoCard } from '@/components/shared/MatchInfoCard';
 import { Match } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +14,7 @@ export default function MatchesPage() {
     const fetchMatches = async () => {
       try {
         setIsLoading(true);
-        const { upcomingMatches } = await getDashboard();
+        const upcomingMatches = await getUpcomingMatches();
         const sortedMatches = (upcomingMatches || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         setMatches(sortedMatches);
       } catch (error) {
