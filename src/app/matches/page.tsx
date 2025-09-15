@@ -15,7 +15,7 @@ export default function MatchesPage() {
       try {
         setIsLoading(true);
         const upcomingMatches = await getUpcomingMatches();
-        const sortedMatches = (upcomingMatches || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const sortedMatches = (upcomingMatches || []).sort((a, b) => new Date(a.matchDateUtc).getTime() - new Date(b.matchDateUtc).getTime());
         setMatches(sortedMatches);
       } catch (error) {
         console.error('Failed to fetch upcoming matches:', error);

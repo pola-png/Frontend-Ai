@@ -40,7 +40,7 @@ export interface Prediction {
   is_vip: boolean;
   outcomes?: Outcomes;
   analysis?: string;
-  date: string;
+  matchDateUtc: string;
   homeTeam: Team;
   awayTeam: Team;
 }
@@ -49,7 +49,7 @@ export interface Match {
   _id: string;
   fixture: string;
   league: string;
-  date: string;
+  matchDateUtc: string;
   status: 'scheduled' | 'upcoming' | 'tba' | 'finished';
   homeTeam: Team;
   awayTeam: Team;

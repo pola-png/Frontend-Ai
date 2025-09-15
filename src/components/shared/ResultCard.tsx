@@ -11,7 +11,7 @@ type ResultCardProps = {
 };
 
 export function ResultCard({ match }: ResultCardProps) {
-  const { homeTeam, awayTeam, league, date, scores, prediction, outcome } = match;
+  const { homeTeam, awayTeam, league, matchDateUtc, scores, prediction, outcome } = match;
 
   const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : 'Home';
   const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
@@ -69,7 +69,7 @@ export function ResultCard({ match }: ResultCardProps) {
       <CardFooter className="bg-muted/50 p-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4" />
-          <span>{format(new Date(date), 'EEE, MMM d, yyyy - HH:mm')}</span>
+          <span>{format(new Date(matchDateUtc), 'EEE, MMM d, yyyy - HH:mm')}</span>
         </div>
       </CardFooter>
     </Card>

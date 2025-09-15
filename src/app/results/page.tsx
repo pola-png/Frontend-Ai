@@ -15,7 +15,7 @@ export default function ResultsPage() {
       try {
         setIsLoading(true);
         const data = await getResults();
-        const sortedResults = (data || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const sortedResults = (data || []).sort((a, b) => new Date(b.matchDateUtc).getTime() - new Date(a.matchDateUtc).getTime());
         setResults(sortedResults);
       } catch (error) {
         console.error('Failed to fetch results:', error);

@@ -10,7 +10,7 @@ type MatchInfoCardProps = {
 };
 
 export function MatchInfoCard({ match }: MatchInfoCardProps) {
-  const { homeTeam, awayTeam, league, date, predictions } = match;
+  const { homeTeam, awayTeam, league, matchDateUtc, predictions } = match;
 
   const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : 'Home';
   const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
@@ -56,7 +56,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
       <CardFooter className="bg-muted/50 p-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4" />
-          <span>{format(new Date(date), 'EEE, MMM d, yyyy - HH:mm')}</span>
+          <span>{format(new Date(matchDateUtc), 'EEE, MMM d, yyyy - HH:mm')}</span>
         </div>
       </CardFooter>
     </Card>

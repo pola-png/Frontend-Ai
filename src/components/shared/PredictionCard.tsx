@@ -24,19 +24,19 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
     return null;
   }
 
-  const { league, date, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
+  const { league, matchDateUtc, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
   
   const homeTeamName = homeTeam?.name || 'Home';
   const awayTeamName = awayTeam?.name || 'Away';
 
   return (
-    <Card className="flex h-full flex-col bg-card/75 transition-shadow duration-300 hover:shadow-xl">
+    <Card className="flex h-full flex-col bg-card shadow-md transition-shadow duration-300 hover:shadow-xl">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold tracking-tight">{league}</CardTitle>
           {is_vip && <Badge variant="destructive" className="bg-yellow-500 text-black">VIP</Badge>}
         </div>
-        <p className="text-sm text-muted-foreground">{date ? format(new Date(date), 'MMM d, yyyy - HH:mm') : 'Date TBD'}</p>
+        <p className="text-sm text-muted-foreground">{matchDateUtc ? format(new Date(matchDateUtc), 'MMM d, yyyy - HH:mm') : 'Date TBD'}</p>
       </CardHeader>
       <CardContent className="flex-1 space-y-4">
         <div className="flex items-center justify-around text-center">
