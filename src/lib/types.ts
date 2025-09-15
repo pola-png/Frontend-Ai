@@ -15,7 +15,7 @@ export interface Prediction {
     home: number | null;
     away: number | null;
   };
-  analysis: string; 
+  analysis?: string; // Analysis is optional
 }
 
 export interface Match {
@@ -27,7 +27,7 @@ export interface Match {
     home: string;
     away: string;
   };
-  prediction?: Prediction; // A match can have an associated prediction
+  prediction?: Partial<Prediction>; // Prediction is optional and can be partial
 }
 
 export interface Result {

@@ -97,11 +97,11 @@ export function HomePageClient() {
         const bigOddsPromise = getPredictionsByBucket('big10');
 
         const [dashboardData, vip, twoOdds, fiveOdds, bigOdds] = await Promise.all([
-          dashboardDataPromise.finally(() => setLoading(prev => ({...prev, upcoming: false}))),
-          vipPromise.finally(() => setLoading(prev => ({...prev, vip: false}))),
-          twoOddsPromise.finally(() => setLoading(prev => ({...prev, twoOdds: false}))),
-          fiveOddsPromise.finally(() => setLoading(prev => ({...prev, fiveOdds: false}))),
-          bigOddsPromise.finally(() => setLoading(prev => ({...prev, bigOdds: false}))),
+          dashboardDataPromise.catch(e => { console.error('Failed to fetch dashboard data:', e); return { upcomingMatches: []}; }).finally(() => setLoading(prev => ({...prev, upcoming: false}))),
+          vipPromise.catch(e => { console.error('Failed to fetch vip predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, vip: false}))),
+          twoOddsPromise.catch(e => { console.error('Failed to fetch 2odds predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, twoOdds: false}))),
+          fiveOddsPromise.catch(e => { console.error('Failed to fetch 5odds predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, fiveOdds: false}))),
+          bigOddsPromise.catch(e => { console.error('Failed to fetch big10 predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, bigOdds: false}))),
         ]);
 
         setUpcomingPredictions(dashboardData.upcomingMatches || []);
@@ -177,7 +177,7 @@ export function HomePageClient() {
                             <TableCell className="text-right">
                               {p.prediction?.odds !== undefined ? p.prediction.odds.toFixed(2) : '-'}
                             </TableCell>
-                            <TableCell className="text-right hidden sm:table-cell">{format(new Date(p.date), 'MMM d, HH:mm')}</TableCell>
+                            <TableCell className="text-right hidden sm:table-cell">{p.date ? format(new Date(p.date), 'MMM d, HH:mm') : '-'}</TableCell>
                         </TableRow>
                     ))
                     ) : (
