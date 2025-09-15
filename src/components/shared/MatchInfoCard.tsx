@@ -16,6 +16,11 @@ export function MatchInfoCard({ item, type }: MatchInfoCardProps) {
 
   const isResult = type === 'result' && 'scores' in item;
 
+  // Safeguard against undefined teams
+  if (!teams) {
+    return null; 
+  }
+
   return (
     <Card className="flex flex-col h-full shadow-md hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
@@ -44,7 +49,7 @@ export function MatchInfoCard({ item, type }: MatchInfoCardProps) {
           </div>
         </div>
 
-        {isResult && 'prediction' in item && (
+        {isResult && 'prediction' in item && item.prediction && (
           <div className="text-center pt-2">
             <p className="text-xs text-muted-foreground">Prediction: {item.prediction}</p>
             <Badge
