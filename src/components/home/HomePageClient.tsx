@@ -10,8 +10,10 @@ import { Crown, Trophy, Gem, Rocket } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
-const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading }: { title: string; predictions: Match[]; icon: React.ElementType; isLoading: boolean }) => {
+const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading, error }: { title: string; predictions: Match[]; icon: React.ElementType; isLoading: boolean; error?: boolean }) => {
   if (isLoading) {
     return (
       <Card className="shadow-lg border-none">
@@ -34,6 +36,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading }: { tit
     );
   }
 
+  if (error) return null;
   if (predictions.length === 0) return null;
 
   return (
@@ -81,49 +84,61 @@ export function HomePageClient() {
     bigOdds: true,
     upcoming: true,
   });
+  
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAllPredictions = async () => {
+    const fetchAllData = async () => {
       try {
-        setLoading(prev => ({ ...prev, vip: true }));
-        getPredictionsByBucket('vip').then(data => setVipPredictions(data)).finally(() => setLoading(prev => ({...prev, vip: false})));
-        
-        setLoading(prev => ({ ...prev, twoOdds: true }));
-        getPredictionsByBucket('2odds').then(data => setTwoOddsPredictions(data)).finally(() => setLoading(prev => ({...prev, twoOdds: false})));
+        const dashboardDataPromise = getDashboard();
+        const vipPromise = getPredictionsByBucket('vip');
+        const twoOddsPromise = getPredictionsByBucket('2odds');
+        const fiveOddsPromise = getPredictionsByBucket('5odds');
+        const bigOddsPromise = getPredictionsByBucket('big10');
 
-        setLoading(prev => ({ ...prev, fiveOdds: true }));
-        getPredictionsByBucket('5odds').then(data => setFiveOddsPredictions(data)).finally(() => setLoading(prev => ({...prev, fiveOdds: false})));
-        
-        setLoading(prev => ({ ...prev, bigOdds: true }));
-        getPredictionsByBucket('big10').then(data => setBigOddsPredictions(data)).finally(() => setLoading(prev => ({...prev, bigOdds: false})));
-      } catch (error) {
-        console.error("Failed to fetch predictions:", error);
-      }
-    };
+        const [dashboardData, vip, twoOdds, fiveOdds, bigOdds] = await Promise.all([
+          dashboardDataPromise.finally(() => setLoading(prev => ({...prev, upcoming: false}))),
+          vipPromise.finally(() => setLoading(prev => ({...prev, vip: false}))),
+          twoOddsPromise.finally(() => setLoading(prev => ({...prev, twoOdds: false}))),
+          fiveOddsPromise.finally(() => setLoading(prev => ({...prev, fiveOdds: false}))),
+          bigOddsPromise.finally(() => setLoading(prev => ({...prev, bigOdds: false}))),
+        ]);
 
-    const fetchDashboard = async () => {
-      try {
-        setLoading(prev => ({ ...prev, upcoming: true }));
-        const dashboardData = await getDashboard();
         setUpcomingPredictions(dashboardData.upcomingMatches || []);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setLoading(prev => ({ ...prev, upcoming: false }));
+        setVipPredictions(vip || []);
+        setTwoOddsPredictions(twoOdds || []);
+        setFiveOddsPredictions(fiveOdds || []);
+        setBigOddsPredictions(bigOdds || []);
+
+      } catch (err) {
+        console.error("Failed to fetch homepage data:", err);
+        setError("There was a problem loading the prediction data. Please try again later.");
+        setLoading({ vip: false, twoOdds: false, fiveOdds: false, bigOdds: false, upcoming: false });
       }
     };
     
-    fetchAllPredictions();
-    fetchDashboard();
+    fetchAllData();
   }, []);
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} isLoading={loading.vip} />
-        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} isLoading={loading.twoOdds} />
-        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} isLoading={loading.fiveOdds} />
-        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} isLoading={loading.bigOdds} />
+        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} isLoading={loading.vip} error={!!error} />
+        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} isLoading={loading.twoOdds} error={!!error} />
+        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} isLoading={loading.fiveOdds} error={!!error} />
+        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} isLoading={loading.bigOdds} error={!!error} />
       </div>
 
       <Card className="shadow-lg border-none">

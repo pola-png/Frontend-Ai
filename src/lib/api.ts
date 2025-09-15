@@ -8,24 +8,24 @@ const api = axios.create({
 
 // --- Dashboard ---
 export const getDashboard = async (): Promise<DashboardData> => {
-  const res = await api.get("/api/dashboard");
+  const res = await api.get("/dashboard");
   return res.data || { upcomingMatches: [], recentResults: [], bucketCounts: {} };
 };
 
 // --- Predictions by bucket ---
 export const getPredictionsByBucket = async (bucket: string): Promise<Match[]> => {
-  const res = await api.get(`/api/predictions/${bucket}`);
+  const res = await api.get(`/predictions/${bucket}`);
   return res.data || [];
 };
 
 // --- Results ---
 export const getResults = async (): Promise<Result[]> => {
-  const res = await api.get("/api/results");
+  const res = await api.get("/results");
   return res.data || [];
 };
 
 // --- Match Summary ---
 export const getMatchSummary = async (matchId: string): Promise<{ summary: string }> => {
-  const res = await api.get(`/api/summary/${matchId}`);
+  const res = await api.get(`/summary/${matchId}`);
   return res.data || { summary: '' };
 };
