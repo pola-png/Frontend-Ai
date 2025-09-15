@@ -37,7 +37,7 @@ export default function TwoOddsPredictionsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-56 w-full" />
+            <Skeleton key={i} className="h-[280px] w-full" />
           ))}
         </div>
       ) : predictions.length > 0 ? (

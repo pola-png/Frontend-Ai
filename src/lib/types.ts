@@ -20,17 +20,18 @@ export interface DoubleChance {
 
 export interface Outcomes {
   oneXTwo: OneXTwo;
-  doubleChance: DoubleChance;
-  over05: number;
-  over15: number;
-  over25: number;
-  bttsYes: number;
-  bttsNo: number;
+  doubleChance?: DoubleChance;
+  over05?: number;
+  over15?: number;
+  over25?: number;
+  bttsYes?: number;
+  bttsNo?: number;
   [k: string]: any;
 }
 
 // This interface represents a "normalized" prediction object,
 // where match details are flattened for easier UI consumption.
+// This is primarily for the /predictions/:bucket endpoints.
 export interface Prediction {
   _id: string;
   matchId: string; 
@@ -50,6 +51,8 @@ export interface Prediction {
   matchDateUtc: string;
 }
 
+// This interface represents a match, which can contain its own predictions.
+// This is primarily for the /matches/upcoming and /results endpoints.
 export interface Match {
   _id: string;
   fixture?: string;
@@ -62,7 +65,7 @@ export interface Match {
     home: number;
     away: number;
   };
-  // A match can have multiple predictions from different buckets, as returned by /matches/upcoming
+  // A match can have multiple predictions from different buckets
   predictions?: Prediction[];
   // For the results page, a single relevant prediction might be attached
   prediction?: Prediction; 

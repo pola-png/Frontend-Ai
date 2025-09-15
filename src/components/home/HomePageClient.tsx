@@ -38,14 +38,14 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
                   {[...Array(3)].map((_, i) => (
                     <CarouselItem key={i} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                       <div className="p-1 space-y-2">
-                        <Skeleton className="h-56 w-full" />
+                        <Skeleton className="h-[280px] w-full" />
                       </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
              </Carousel>
           ) : hasPredictions ? (
-            <Carousel opts={{ align: 'start', loop: predictions.length > 3 }} className="w-full">
+            <Carousel opts={{ align: 'start', loop: predictions.length > 2 }} className="w-full">
               <CarouselContent className="-ml-4">
                 {predictions.map((p) => (
                   <CarouselItem key={p._id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
@@ -55,7 +55,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              {predictions.length > 3 && (
+              {predictions.length > 2 && (
                 <>
                   <CarouselPrevious className="hidden sm:flex" />
                   <CarouselNext className="hidden sm:flex" />

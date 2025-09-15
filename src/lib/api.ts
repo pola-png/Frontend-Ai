@@ -18,7 +18,10 @@ const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
   }
 
   return predictionGroups.flat().map(p => {
-    if (!p || !p.matchId || typeof p.matchId !== 'object') return null;
+    if (!p || !p.matchId || typeof p.matchId !== 'object') {
+      console.warn("Skipping invalid prediction object:", p);
+      return null;
+    }
 
     const match = p.matchId;
     const homeTeam = typeof match.homeTeam === 'object' ? match.homeTeam : { name: match.homeTeam || 'Home' };
@@ -27,9 +30,10 @@ const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
     let textualPrediction = p.prediction;
     let predictionOdds = p.odds;
 
-    // Determine the textual prediction and odds if not explicitly present
+    // Determine the textual prediction and odds from oneXTwo if not explicitly present
     if ((!textualPrediction || !predictionOdds) && p.outcomes?.oneXTwo) {
       const { home, draw, away } = p.outcomes.oneXTwo;
+      // Find the highest probability to determine the prediction
       const maxOddValue = Math.max(home, draw, away);
       
       if (maxOddValue === home) {
@@ -43,7 +47,6 @@ const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
         predictionOdds = draw;
       }
     }
-
 
     return {
       _id: p._id,
@@ -96,12 +99,27 @@ export const getResults = async (): Promise<Match[]> => {
 export const getUpcomingMatches = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/matches/upcoming');
-    return res.data || [];
+    return (res.data || []).map((match: any) => ({
+      ...match,
+      // Ensure predictions within a match have a determined textual prediction
+      predictions: (match.predictions || []).map((p: any) => {
+        let textualPrediction = p.prediction;
+        if (!textualPrediction && p.outcomes?.oneXTwo) {
+          const { home, draw, away } = p.outcomes.oneXTwo;
+          const maxOddValue = Math.max(home, draw, away);
+          if (maxOddValue === home) textualPrediction = 'Home Win';
+          else if (maxOddValue === away) textualPrediction = 'Away Win';
+          else textualPrediction = 'Draw';
+        }
+        return { ...p, prediction: textualPrediction };
+      })
+    }));
   } catch (error) {
     console.error("Failed to fetch upcoming matches:", error);
     return [];
   }
 };
+
 
 // --- Match Summary ---
 export const getMatchSummary = async (matchId: string): Promise<Match | null> => {

@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
 import { Calendar, ShieldCheck, XCircle } from 'lucide-react';
+import Image from 'next/image';
 
 type ResultCardProps = {
   match: Match;
@@ -15,6 +16,8 @@ export function ResultCard({ match }: ResultCardProps) {
 
   const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : homeTeam;
   const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : awayTeam;
+  const homeTeamLogo = typeof homeTeam === 'object' ? homeTeam.logoUrl : undefined;
+  const awayTeamLogo = typeof awayTeam === 'object' ? awayTeam.logoUrl : undefined;
 
   return (
     <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300 border-border/20">
@@ -25,7 +28,7 @@ export function ResultCard({ match }: ResultCardProps) {
         <div className="flex w-full items-center justify-between text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase() || 'H'}</AvatarFallback>
+              {homeTeamLogo ? <Image src={homeTeamLogo} alt={homeTeamName} width={40} height={40} /> : <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase() || 'H'}</AvatarFallback>}
             </Avatar>
             <span className="font-semibold text-sm text-center break-words">{homeTeamName}</span>
           </div>
@@ -38,7 +41,7 @@ export function ResultCard({ match }: ResultCardProps) {
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>
+              {awayTeamLogo ? <Image src={awayTeamLogo} alt={awayTeamName} width={40} height={40} /> : <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>}
             </Avatar>
             <span className="font-semibold text-sm text-center break-words">{awayTeamName}</span>
           </div>

@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { Calendar, ShieldCheck } from 'lucide-react';
 import { Badge } from '../ui/badge';
+import Image from 'next/image';
 
 type MatchInfoCardProps = {
   match: Match;
@@ -14,19 +15,8 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
 
   const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : homeTeam;
   const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : awayTeam;
-
-  // Function to determine prediction text if not available
-  const getPredictionText = (prediction: any) => {
-    if (prediction.prediction) return prediction.prediction;
-    if (prediction.outcomes?.oneXTwo) {
-      const { home, draw, away } = prediction.outcomes.oneXTwo;
-      const maxVal = Math.max(home, draw, away);
-      if (maxVal === home) return 'Home Win';
-      if (maxVal === away) return 'Away Win';
-      return 'Draw';
-    }
-    return 'N/A';
-  }
+  const homeTeamLogo = typeof homeTeam === 'object' ? homeTeam.logoUrl : undefined;
+  const awayTeamLogo = typeof awayTeam === 'object' ? awayTeam.logoUrl : undefined;
 
   return (
     <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300 border-border/20">
@@ -37,7 +27,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
         <div className="flex w-full items-center justify-between text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase() || 'H'}</AvatarFallback>
+              {homeTeamLogo ? <Image src={homeTeamLogo} alt={homeTeamName} width={40} height={40} /> : <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase() || 'H'}</AvatarFallback>}
             </Avatar>
             <span className="font-semibold text-sm text-center break-words">{homeTeamName}</span>
           </div>
@@ -46,7 +36,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>
+              {awayTeamLogo ? <Image src={awayTeamLogo} alt={awayTeamName} width={40} height={40} /> : <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>}
             </Avatar>
             <span className="font-semibold text-sm text-center break-words">{awayTeamName}</span>
           </div>
@@ -58,7 +48,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
               {predictions.map(p => p && (
                 <Badge key={p._id} variant="secondary" className="flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3 text-green-500" />
-                   {getPredictionText(p)}
+                   {p.prediction}
                   {p.bucket && <span className="font-normal opacity-75">({p.bucket})</span>}
                 </Badge>
               ))}
