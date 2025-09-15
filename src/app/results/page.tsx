@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { getResults } from '@/lib/api';
-import { MatchInfoCard } from '@/components/shared/MatchInfoCard';
-import { Result } from '@/lib/types';
+import { ResultCard } from '@/components/shared/ResultCard';
+import { Match } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ResultsPage() {
-  const [results, setResults] = useState<Result[]>([]);
+  const [results, setResults] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function ResultsPage() {
       ) : results.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {results.map((result) => (
-            <MatchInfoCard key={result._id} item={result} type="result" />
+            <ResultCard key={result._id} match={result} />
           ))}
         </div>
       ) : (

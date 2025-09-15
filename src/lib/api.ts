@@ -1,12 +1,12 @@
 import axios from 'axios';
-import type { Match, Result, DashboardData } from './types';
+import type { Match, DashboardData } from './types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
-// --- Dashboard ---
+// This function is not used by the homepage anymore but can be kept for other uses.
 export const getDashboard = async (): Promise<DashboardData> => {
   try {
     const res = await api.get('/dashboard');
@@ -21,7 +21,6 @@ export const getDashboard = async (): Promise<DashboardData> => {
     };
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
-    // Return a default structure on error to prevent crashes
     return { 
       upcomingMatches: [], 
       recentResults: [], 
@@ -38,7 +37,7 @@ export const getDashboard = async (): Promise<DashboardData> => {
 export const getPredictionsByBucket = async (bucket: string): Promise<Match[]> => {
   try {
     const res = await api.get(`/predictions/${bucket}`);
-    return res.data || [];
+    return (res.data || []).map((m: any) => ({ ...m, date: m.matchDateUtc }));
   } catch (error) {
     console.error(`Failed to fetch predictions for bucket ${bucket}:`, error);
     return [];
@@ -46,11 +45,12 @@ export const getPredictionsByBucket = async (bucket: string): Promise<Match[]> =
 };
 
 // --- Results ---
-export const getResults = async (): Promise<Result[]> => {
+export const getResults = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/results');
-    return res.data || [];
-  } catch (error) {
+    return (res.data || []).map((m: any) => ({ ...m, date: m.matchDateUtc }));
+  } catch (error)
+ {
     console.error("Failed to fetch results:", error);
     return [];
   }
@@ -71,7 +71,7 @@ export const getMatchSummary = async (matchId: string): Promise<{ summary: strin
 export const getUpcomingMatches = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/matches');
-    return res.data || [];
+    return (res.data || []).map((m: any) => ({ ...m, date: m.matchDateUtc }));
   } catch (error) {
     console.error("Failed to fetch upcoming matches:", error);
     return [];

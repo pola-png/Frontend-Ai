@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Match, Result } from '@/lib/types';
+import type { Match } from '@/lib/types';
 import { getPredictionsByBucket, getUpcomingMatches } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -46,8 +46,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
     );
   }
 
-  if (error) return null;
-  if (!predictions || predictions.length === 0) return null;
+  if (error || !predictions || predictions.length === 0) return null;
 
   return (
     <Card className="shadow-lg border-none">
@@ -115,7 +114,7 @@ export function HomePageClient() {
           getPredictionsByBucket("2odds"),
           getPredictionsByBucket("5odds"),
           getPredictionsByBucket("big10"),
-          getUpcomingMatches(),
+          getPredictionsByBucket("all"), // Fetching a general bucket for the table
         ]);
 
         setVipPredictions(vipData || []);

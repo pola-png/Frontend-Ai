@@ -1,4 +1,5 @@
 export interface Team {
+  _id: string;
   name: string;
   logo?: string;
 }
@@ -15,40 +16,29 @@ export interface Prediction {
 }
 
 export interface Match {
-  _id: string;
+  _id:string;
   fixture: string;
   league: string;
-  date: string;
+  date: string; // This will be matchDateUtc from backend
+  status: 'scheduled' | 'upcoming' | 'tba' | 'finished';
   teams: {
     home: string;
     away: string;
   };
-  homeTeam?: Team;
-  awayTeam?: Team;
-  prediction?: Partial<Prediction>;
-}
-
-export interface Result {
-  _id: string;
-  fixture: string;
-  league: string;
-  date: string;
-  status: 'finished';
-  teams: {
-    home: string;
-    away: string;
-  };
-  scores: {
+  scores?: {
     home: number;
     away: number;
   };
-  prediction: string;
-  outcome: 'won' | 'lost';
+  homeTeam?: Team; 
+  awayTeam?: Team;
+  prediction?: Partial<Prediction>;
+  outcome?: 'won' | 'lost';
 }
+
 
 export interface DashboardData {
   upcomingMatches: Match[];
-  recentResults: Result[];
+  recentResults: Match[];
   bucketCounts: Record<string, number>;
   vipPredictions: Match[];
   twoOddsPredictions: Match[];
