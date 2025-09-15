@@ -15,7 +15,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
   const hasPredictions = predictions.length > 0;
 
   return (
-    <Card className="shadow-lg border-none bg-card hover:shadow-2xl transition-shadow duration-300">
+    <Card className="shadow-lg border-border/20 bg-card hover:shadow-2xl transition-shadow duration-300">
       <div className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
@@ -49,9 +49,9 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
               <CarouselContent className="-ml-4">
                 {predictions.map((p) => (
                   <CarouselItem key={p._id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <Link href={link} passHref className="p-1 block h-full">
+                    <div className="p-1 block h-full">
                       <PredictionCard prediction={p} />
-                    </Link>
+                    </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -76,7 +76,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
 const DashboardCard = ({ title, icon: Icon, link, description }: { title: string; icon: React.ElementType; link: string; description: string; }) => {
   return (
      <Link href={link} passHref className="block h-full">
-      <Card className="shadow-lg border-none bg-card hover:shadow-2xl transition-shadow duration-300 h-full">
+      <Card className="shadow-lg border-border/20 bg-card hover:shadow-2xl transition-shadow duration-300 h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
             <div className='flex items-center gap-2'>

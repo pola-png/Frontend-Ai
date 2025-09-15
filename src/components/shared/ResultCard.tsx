@@ -17,7 +17,7 @@ export function ResultCard({ match }: ResultCardProps) {
   const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
 
   return (
-    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300">
+    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300 border-border/20">
       <CardHeader>
         <CardTitle className="text-base font-medium text-muted-foreground truncate">{league}</CardTitle>
       </CardHeader>
@@ -69,7 +69,7 @@ export function ResultCard({ match }: ResultCardProps) {
       <CardFooter className="bg-muted/50 p-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4" />
-          <span>{format(new Date(matchDateUtc), 'EEE, MMM d, yyyy - HH:mm')}</span>
+          <span>{matchDateUtc ? format(new Date(matchDateUtc), 'EEE, MMM d, yyyy - HH:mm') : 'Date TBD'}</span>
         </div>
       </CardFooter>
     </Card>

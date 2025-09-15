@@ -1,7 +1,7 @@
 export interface Team {
   _id: string;
   name: string;
-  logo?: string;
+  logoUrl?: string;
 }
 
 export interface OneXTwo {
@@ -30,9 +30,9 @@ export interface Outcomes {
 export interface Prediction {
   _id: string;
   matchId: string;
-  fixture: string; // From older data model, but useful for display
-  league: string; // From older data model
-  prediction: string; // The textual prediction, e.g. "Home Win"
+  fixture: string;
+  league: string;
+  prediction: string;
   odds: number;
   confidence: number;
   bucket: '2odds' | '5odds' | 'big10' | 'vip' | string;
@@ -40,9 +40,9 @@ export interface Prediction {
   is_vip: boolean;
   outcomes?: Outcomes;
   analysis?: string;
-  matchDateUtc: string;
-  homeTeam: Team;
-  awayTeam: Team;
+  matchDateUtc: string; // from parent Match
+  homeTeam: Team;      // from parent Match
+  awayTeam: Team;      // from parent Match
 }
 
 export interface Match {
@@ -58,7 +58,6 @@ export interface Match {
     away: number;
   };
   predictions?: Prediction[];
-  // For results page, a single prediction might be attached
-  prediction?: Prediction;
+  prediction?: Prediction; // For results page
   outcome?: 'won' | 'lost';
 }

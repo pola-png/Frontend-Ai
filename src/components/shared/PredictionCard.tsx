@@ -30,7 +30,7 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
   const awayTeamName = awayTeam?.name || 'Away';
 
   return (
-    <Card className="flex h-full flex-col bg-card shadow-md transition-shadow duration-300 hover:shadow-xl">
+    <Card className="flex h-full flex-col bg-card shadow-md transition-shadow duration-300 hover:shadow-xl border-border/20">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold tracking-tight">{league}</CardTitle>
