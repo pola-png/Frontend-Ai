@@ -32,8 +32,8 @@ export interface Outcomes {
 export interface Prediction {
   _id: string;
   matchId: string | Match; // Can be a string or a populated Match object from the API
-  fixture?: string; // This will be added by normalization
-  league?: string; // This will be added by normalization
+  fixture?: string; 
+  league?: string; 
   prediction?: string;
   odds?: number;
   confidence?: number;
@@ -42,9 +42,9 @@ export interface Prediction {
   is_vip?: boolean;
   outcomes?: Outcomes;
   analysis?: string;
-  matchDateUtc?: string; // This will be added by normalization
-  homeTeam?: Team; // This will be added by normalization
-  awayTeam?: Team; // This will be added by normalization
+  matchDateUtc?: string; 
+  homeTeam?: Team; 
+  awayTeam?: Team; 
 }
 
 export interface Match {

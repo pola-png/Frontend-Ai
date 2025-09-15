@@ -11,40 +11,35 @@ const api = axios.create({
 const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
   if (!Array.isArray(predictionGroups)) return [];
   
-  const flatPredictions: Prediction[] = [];
-  
   // The API returns an array of arrays (groups of predictions per match)
-  predictionGroups.forEach(group => {
-    if (Array.isArray(group)) {
-      group.forEach(p => {
-        // The match data (teams, date, etc.) is in the populated `matchId` object.
-        const matchData = p.matchId;
+  return predictionGroups.flat().map(p => {
+    const match = p.matchId || {};
+    return {
+      _id: p._id,
+      prediction: p.prediction,
+      bucket: p.bucket,
+      confidence: p.confidence,
+      odds: p.odds,
+      outcomes: p.outcomes,
+      status: p.status,
+      is_vip: p.is_vip,
+      analysis: p.analysis,
 
-        // Ensure matchData is a valid object before proceeding
-        if (typeof matchData === 'object' && matchData !== null && matchData.homeTeam && matchData.awayTeam) {
-            flatPredictions.push({
-              ...p,
-              // Hoist the match details to the top level for easier access in components.
-              matchId: matchData._id, // Keep the original matchId as a string
-              homeTeam: typeof matchData.homeTeam === 'object' ? matchData.homeTeam : { name: matchData.homeTeam },
-              awayTeam: typeof matchData.awayTeam === 'object' ? matchData.awayTeam : { name: matchData.awayTeam },
-              league: matchData.league,
-              fixture: matchData.fixture,
-              matchDateUtc: matchData.matchDateUtc,
-            });
-        }
-      });
-    }
+      // Flatten match info from the nested matchId object
+      matchId: match._id,
+      homeTeam: typeof match.homeTeam === 'object' ? match.homeTeam : { name: match.homeTeam },
+      awayTeam: typeof match.awayTeam === 'object' ? match.awayTeam : { name: match.awayTeam },
+      league: match.league,
+      fixture: match.fixture,
+      matchDateUtc: match.matchDateUtc,
+    };
   });
-
-  return flatPredictions;
 };
 
 // --- Predictions by bucket ---
 export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[]> => {
   try {
     const res = await api.get(`/predictions/${bucket}`);
-    // The response is an array of arrays, e.g., [[pred1, pred2], [pred3]]
     const predictionGroups: any[][] = res.data || [];
     return normalizePredictions(predictionGroups);
   } catch (error) {

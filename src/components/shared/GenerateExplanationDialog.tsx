@@ -23,8 +23,8 @@ export function GenerateExplanationDialog({ prediction }: { prediction: Predicti
   const [isOpen, setIsOpen] = useState(false);
 
   const handleGenerate = async () => {
-    if (!prediction.prediction) {
-      setError('No prediction data available to generate an explanation.');
+    if (!prediction.prediction || !prediction.homeTeam?.name || !prediction.awayTeam?.name) {
+      setError('Not enough prediction data available to generate an explanation.');
       return;
     }
     setIsLoading(true);
@@ -47,7 +47,7 @@ export function GenerateExplanationDialog({ prediction }: { prediction: Predicti
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Generate AI Explanation" disabled={!prediction}>
+        <Button variant="ghost" size="icon" aria-label="Generate AI Explanation" disabled={!prediction.homeTeam || !prediction.awayTeam}>
           <Sparkles className="h-5 w-5 text-primary" />
         </Button>
       </DialogTrigger>
@@ -58,7 +58,7 @@ export function GenerateExplanationDialog({ prediction }: { prediction: Predicti
             AI Prediction Analysis
           </DialogTitle>
           <DialogDescription>
-            AI-generated explanation for the prediction on {prediction.fixture}.
+            AI-generated analysis for the match: {prediction.homeTeam?.name || 'Home'} vs {prediction.awayTeam?.name || 'Away'}.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] pr-4">

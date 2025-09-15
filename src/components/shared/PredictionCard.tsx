@@ -33,25 +33,25 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
     <Card className="flex h-full flex-col bg-card shadow-md transition-shadow duration-300 hover:shadow-xl border-border/20">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold tracking-tight">{league || 'Match'}</CardTitle>
+          <CardTitle className="text-lg font-semibold tracking-tight truncate">{league || 'Match'}</CardTitle>
           {is_vip && <Badge variant="destructive" className="bg-yellow-500 text-black">VIP</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">{matchDateUtc ? format(new Date(matchDateUtc), 'MMM d, yyyy - HH:mm') : 'Date TBD'}</p>
       </CardHeader>
       <CardContent className="flex-1 space-y-4">
         <div className="flex items-center justify-around text-center">
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
               <AvatarFallback>{homeTeamName.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-medium">{homeTeamName}</span>
+            <span className="font-medium text-sm break-words">{homeTeamName}</span>
           </div>
           <span className="text-2xl font-bold text-muted-foreground">vs</span>
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
               <AvatarFallback>{awayTeamName.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-medium">{awayTeamName}</span>
+            <span className="font-medium text-sm break-words">{awayTeamName}</span>
           </div>
         </div>
         <div className="text-center">
