@@ -15,7 +15,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
   const hasPredictions = predictions.length > 0;
 
   return (
-    <Card className="shadow-lg border-none bg-card hover:bg-card/75 transition-colors duration-300">
+    <Card className="shadow-lg border-none bg-card hover:shadow-2xl transition-shadow duration-300">
       <div className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
@@ -75,8 +75,8 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
 
 const DashboardCard = ({ title, icon: Icon, link, description }: { title: string; icon: React.ElementType; link: string; description: string; }) => {
   return (
-     <Card className="shadow-lg border-none bg-card hover:bg-card/75 transition-colors duration-300">
-      <Link href={link} passHref className="flex flex-col h-full">
+     <Link href={link} passHref className="block h-full">
+      <Card className="shadow-lg border-none bg-card hover:shadow-2xl transition-shadow duration-300 h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
             <div className='flex items-center gap-2'>
@@ -94,8 +94,8 @@ const DashboardCard = ({ title, icon: Icon, link, description }: { title: string
               <p className="text-muted-foreground text-center px-4">{description}</p>
           </div>
         </CardContent>
-      </Link>
-    </Card>
+      </Card>
+    </Link>
   );
 };
 

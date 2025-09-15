@@ -12,7 +12,8 @@ export const getPredictionsByBucket = async (bucket: string): Promise<Prediction
   try {
     const res = await api.get(`/predictions/${bucket}`);
     // The backend returns predictions grouped by match, so we flatten the array.
-    return (res.data || []).flat();
+    const predictionGroups: Prediction[][] = res.data || [];
+    return predictionGroups.flat();
   } catch (error) {
     console.error(`Failed to fetch predictions for bucket ${bucket}:`, error);
     return [];
@@ -23,10 +24,7 @@ export const getPredictionsByBucket = async (bucket: string): Promise<Prediction
 export const getResults = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/results');
-    return (res.data || []).map((m: any) => ({
-      ...m,
-      date: m.matchDateUtc,
-    }));
+    return res.data || [];
   } catch (error) {
     console.error("Failed to fetch results:", error);
     return [];
@@ -37,8 +35,8 @@ export const getResults = async (): Promise<Match[]> => {
 // --- Match Summary ---
 export const getMatchSummary = async (matchId: string): Promise<Match | null> => {
   try {
-    const res = await api.get(`/match/${matchId}`);
-    return res.data ? { ...res.data, date: res.data.matchDateUtc } : null;
+    const res = await api.get(`/summary/${matchId}`);
+    return res.data || null;
   } catch (error) {
     console.error(`Failed to fetch summary for match ${matchId}:`, error);
     return null;
@@ -50,7 +48,7 @@ export const getMatchSummary = async (matchId: string): Promise<Match | null> =>
 export const getUpcomingMatches = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/matches/upcoming');
-    return (res.data || []).map((m: any) => ({ ...m, date: m.matchDateUtc }));
+    return res.data || [];
   } catch (error) {
     console.error("Failed to fetch upcoming matches:", error);
     return [];

@@ -13,15 +13,11 @@ type ResultCardProps = {
 export function ResultCard({ match }: ResultCardProps) {
   const { homeTeam, awayTeam, league, date, scores, prediction, outcome } = match;
 
-  if (!homeTeam || !awayTeam) {
-    return null;
-  }
-  
-  const homeTeamName = homeTeam.name;
-  const awayTeamName = awayTeam.name;
+  const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : 'Home';
+  const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
 
   return (
-    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl hover:bg-card/75 transition-shadow duration-300">
+    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
         <CardTitle className="text-base font-medium text-muted-foreground truncate">{league}</CardTitle>
       </CardHeader>

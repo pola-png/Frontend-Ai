@@ -12,12 +12,11 @@ type MatchInfoCardProps = {
 export function MatchInfoCard({ match }: MatchInfoCardProps) {
   const { homeTeam, awayTeam, league, date, predictions } = match;
 
-  if (!homeTeam || !awayTeam) {
-    return null; 
-  }
+  const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : 'Home';
+  const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
 
   return (
-    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl hover:bg-card/75 transition-shadow duration-300">
+    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
         <CardTitle className="text-base font-medium text-muted-foreground truncate">{league}</CardTitle>
       </CardHeader>
@@ -25,18 +24,18 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
         <div className="flex w-full items-center justify-between text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{homeTeam.name?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{homeTeam.name}</span>
+            <span className="font-semibold text-sm text-center break-words">{homeTeamName}</span>
           </div>
           <div className="w-1/5">
              <span className="text-xl font-bold text-muted-foreground">vs</span>
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{awayTeam.name?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{awayTeam.name}</span>
+            <span className="font-semibold text-sm text-center break-words">{awayTeamName}</span>
           </div>
         </div>
         {predictions && predictions.length > 0 && (
