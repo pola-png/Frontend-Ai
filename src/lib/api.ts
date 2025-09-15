@@ -1,14 +1,14 @@
-import axios from "axios";
+import axios from 'axios';
 import type { Match, Result, DashboardData } from './types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // --- Dashboard ---
 export const getDashboard = async (): Promise<DashboardData> => {
-  const res = await api.get("/dashboard");
+  const res = await api.get('/dashboard');
   return res.data || { 
     upcomingMatches: [], 
     recentResults: [], 
@@ -28,7 +28,7 @@ export const getPredictionsByBucket = async (bucket: string): Promise<Match[]> =
 
 // --- Results ---
 export const getResults = async (): Promise<Result[]> => {
-  const res = await api.get("/results");
+  const res = await api.get('/results');
   return res.data || [];
 };
 
