@@ -31,7 +31,7 @@ export function PredictionCard({ match }: { match: Match }) {
   const awayTeam = teams.away;
 
   return (
-    <Card className="flex h-full flex-col bg-card transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
+    <Card className="flex h-full flex-col bg-card transition-shadow duration-300 hover:shadow-xl">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold tracking-tight">{league}</CardTitle>

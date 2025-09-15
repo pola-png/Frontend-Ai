@@ -18,7 +18,7 @@ export function ResultCard({ match }: ResultCardProps) {
   }
 
   return (
-    <Card className="flex flex-col h-full shadow-md hover:shadow-xl transition-shadow duration-300">
+    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
         <CardTitle className="text-base font-medium text-muted-foreground truncate">{league}</CardTitle>
       </CardHeader>
