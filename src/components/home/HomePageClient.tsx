@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Match, DashboardData } from '@/lib/types';
-import { getDashboard } from '@/lib/api';
+import type { Match, Result } from '@/lib/types';
+import { getPredictionsByBucket, getUpcomingMatches } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
@@ -89,7 +89,12 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
 };
 
 export function HomePageClient() {
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [vipPredictions, setVipPredictions] = useState<Match[]>([]);
+  const [twoOddsPredictions, setTwoOddsPredictions] = useState<Match[]>([]);
+  const [fiveOddsPredictions, setFiveOddsPredictions] = useState<Match[]>([]);
+  const [bigOddsPredictions, setBigOddsPredictions] = useState<Match[]>([]);
+  const [upcomingPredictions, setUpcomingPredictions] = useState<Match[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,8 +103,27 @@ export function HomePageClient() {
       try {
         setLoading(true);
         setError(null);
-        const dashboardData = await getDashboard();
-        setData(dashboardData);
+        
+        const [
+          vipData, 
+          twoData, 
+          fiveData, 
+          bigData, 
+          upcomingData
+        ] = await Promise.all([
+          getPredictionsByBucket("vip"),
+          getPredictionsByBucket("2odds"),
+          getPredictionsByBucket("5odds"),
+          getPredictionsByBucket("big10"),
+          getUpcomingMatches(),
+        ]);
+
+        setVipPredictions(vipData || []);
+        setTwoOddsPredictions(twoData || []);
+        setFiveOddsPredictions(fiveData || []);
+        setBigOddsPredictions(bigData || []);
+        setUpcomingPredictions((upcomingData || []).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5));
+
       } catch (err) {
         console.error("Failed to fetch homepage data:", err);
         setError("There was a problem loading the prediction data. Please try again later.");
@@ -122,16 +146,14 @@ export function HomePageClient() {
       </div>
     );
   }
-  
-  const upcomingPredictions = (data?.upcomingMatches || []).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5);
 
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <PredictionCarousel title="VIP Picks" predictions={data?.vipPredictions || []} icon={Crown} link="/predictions/vip" isLoading={loading} />
-        <PredictionCarousel title="Daily 2+ Odds" predictions={data?.twoOddsPredictions || []} icon={Trophy} link="/predictions/2odds" isLoading={loading} />
-        <PredictionCarousel title="Value 5+ Odds" predictions={data?.fiveOddsPredictions || []} icon={Gem} link="/predictions/5odds" isLoading={loading} />
-        <PredictionCarousel title="Big 10+ Odds" predictions={data?.bigOddsPredictions || []} icon={Rocket} link="/predictions/big10" isLoading={loading} />
+        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} link="/predictions/vip" isLoading={loading} />
+        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} link="/predictions/2odds" isLoading={loading} />
+        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} link="/predictions/5odds" isLoading={loading} />
+        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} link="/predictions/big10" isLoading={loading} />
       </div>
 
       <Card className="shadow-lg border-none">
