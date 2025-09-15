@@ -43,7 +43,7 @@ export const getMatchSummary = async (matchId: string): Promise<{ summary: strin
 // --- Upcoming Matches ---
 export const getUpcomingMatches = async (): Promise<Match[]> => {
   try {
-    const res = await api.get('/matches');
+    const res = await api.get('/upcoming');
     return (res.data || []).map((m: any) => ({ ...m, date: m.matchDateUtc }));
   } catch (error) {
     console.error("Failed to fetch upcoming matches:", error);
