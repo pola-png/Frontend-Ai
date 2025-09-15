@@ -1,4 +1,4 @@
-import type { Match, Prediction } from '@/lib/types';
+import type { Match } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
@@ -6,21 +6,18 @@ import { Calendar, ShieldCheck } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
 type MatchInfoCardProps = {
-  item: Match;
+  match: Match;
 };
 
-export function MatchInfoCard({ item }: MatchInfoCardProps) {
-  const { teams, league, date, homeTeam, awayTeam, predictions } = item;
+export function MatchInfoCard({ match }: MatchInfoCardProps) {
+  const { homeTeam, awayTeam, league, date, predictions } = match;
 
-  if (!teams) {
+  if (!homeTeam || !awayTeam) {
     return null; 
   }
 
-  const homeTeamName = homeTeam?.name || teams.home;
-  const awayTeamName = awayTeam?.name || teams.away;
-
   return (
-    <Card className="flex flex-col h-full bg-card/50 shadow-md hover:shadow-xl hover:bg-card/75 transition-shadow duration-300">
+    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl hover:bg-card/75 transition-shadow duration-300">
       <CardHeader>
         <CardTitle className="text-base font-medium text-muted-foreground truncate">{league}</CardTitle>
       </CardHeader>
@@ -28,18 +25,18 @@ export function MatchInfoCard({ item }: MatchInfoCardProps) {
         <div className="flex w-full items-center justify-between text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{homeTeam.name?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{homeTeamName}</span>
+            <span className="font-semibold text-sm text-center break-words">{homeTeam.name}</span>
           </div>
           <div className="w-1/5">
              <span className="text-xl font-bold text-muted-foreground">vs</span>
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{awayTeam.name?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{awayTeamName}</span>
+            <span className="font-semibold text-sm text-center break-words">{awayTeam.name}</span>
           </div>
         </div>
         {predictions && predictions.length > 0 && (
@@ -50,7 +47,7 @@ export function MatchInfoCard({ item }: MatchInfoCardProps) {
                 <Badge key={p._id} variant="secondary" className="flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3 text-green-500" />
                   {p.prediction}
-                  <span className="font-normal opacity-75">({p.bucket})</span>
+                  {p.bucket && <span className="font-normal opacity-75">({p.bucket})</span>}
                 </Badge>
               ))}
             </div>

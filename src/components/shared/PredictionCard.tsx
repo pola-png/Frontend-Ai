@@ -22,12 +22,12 @@ const StatusIcon = ({ status }: { status: Prediction['status'] }) => {
 export function PredictionCard({ prediction }: { prediction: Prediction }) {
   const { league, date, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
   
-  if (!prediction) {
+  if (!prediction || !homeTeam || !awayTeam) {
     return null; // Or some fallback UI
   }
 
-  const homeTeamName = homeTeam?.name || 'Home';
-  const awayTeamName = awayTeam?.name || 'Away';
+  const homeTeamName = homeTeam.name || 'Home';
+  const awayTeamName = awayTeam.name || 'Away';
 
   return (
     <Card className="flex h-full flex-col bg-card/75 transition-shadow duration-300 hover:shadow-xl hover:bg-card">
@@ -42,14 +42,14 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
         <div className="flex items-center justify-around text-center">
           <div className="flex flex-col items-center gap-2">
             <Avatar>
-              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{homeTeamName.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <span className="font-medium">{homeTeamName}</span>
           </div>
           <span className="text-2xl font-bold text-muted-foreground">vs</span>
           <div className="flex flex-col items-center gap-2">
             <Avatar>
-              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{awayTeamName.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <span className="font-medium">{awayTeamName}</span>
           </div>

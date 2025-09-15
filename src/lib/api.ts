@@ -7,10 +7,12 @@ const api = axios.create({
 });
 
 // --- Predictions by bucket ---
-export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[][]> => {
+// This endpoint returns Prediction[][], so we flatten it.
+export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[]> => {
   try {
     const res = await api.get(`/predictions/${bucket}`);
-    return res.data || [];
+    // The backend returns predictions grouped by match, so we flatten the array.
+    return (res.data || []).flat();
   } catch (error) {
     console.error(`Failed to fetch predictions for bucket ${bucket}:`, error);
     return [];
@@ -21,17 +23,9 @@ export const getPredictionsByBucket = async (bucket: string): Promise<Prediction
 export const getResults = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/results');
-    // The backend seems to be returning the prediction object directly.
-    // The type `Match` expects `prediction` to be an object.
     return (res.data || []).map((m: any) => ({
       ...m,
       date: m.matchDateUtc,
-      prediction: m.prediction ? {
-        ...m.prediction,
-        prediction: m.prediction.prediction,
-        odds: m.prediction.odds,
-        status: m.prediction.status,
-      } : undefined
     }));
   } catch (error) {
     console.error("Failed to fetch results:", error);

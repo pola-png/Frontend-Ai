@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { getExplanationAction } from '@/app/actions';
-import { Match, Prediction } from '@/lib/types';
+import { Prediction } from '@/lib/types';
 import { Sparkles } from 'lucide-react';
 import { Icons } from './Icons';
 import { ScrollArea } from '../ui/scroll-area';
@@ -31,10 +31,10 @@ export function GenerateExplanationDialog({ prediction }: { prediction: Predicti
     setError('');
     setExplanation('');
     const result = await getExplanationAction({
-      team1: prediction.teams.home,
-      team2: prediction.teams.away,
+      team1: prediction.homeTeam.name,
+      team2: prediction.awayTeam.name,
       prediction: prediction.prediction,
-      relevantStats: prediction.analysis,
+      relevantStats: prediction.analysis || 'No additional stats available.',
     });
     setIsLoading(false);
     if ('error' in result) {

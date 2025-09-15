@@ -9,10 +9,6 @@ export interface Prediction {
   fixture: string;
   league: string;
   date: string;
-  teams: {
-    home: string;
-    away: string;
-  };
   prediction: string;
   odds: number;
   status: 'pending' | 'won' | 'lost';
@@ -25,27 +21,25 @@ export interface Prediction {
     away: number;
   };
   outcome?: 'won' | 'lost';
-  homeTeam?: Team; // This is populated by backend
-  awayTeam?: Team; // This is populated by backend
+  homeTeam: Team; 
+  awayTeam: Team;
 }
 
 export interface Match {
   _id: string;
   fixture: string;
   league: string;
-  date: string; // This will be matchDateUtc from backend
+  date: string; 
   status: 'scheduled' | 'upcoming' | 'tba' | 'finished';
-  teams: {
-    home: string;
-    away: string;
-  };
+  homeTeam: Team;
+  awayTeam: Team;
   scores?: {
     home: number;
     away: number;
   };
-  homeTeam?: Team;
-  awayTeam?: Team;
-  prediction?: Partial<Prediction>; // A single prediction for results page
-  predictions?: Partial<Prediction>[]; // Multiple predictions for upcoming matches
+  // A single prediction object for the simple results page
+  prediction?: Prediction;
+  // An array of all available predictions for the match summary/upcoming page
+  predictions?: Prediction[];
   outcome?: 'won' | 'lost';
 }

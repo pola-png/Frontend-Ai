@@ -16,8 +16,7 @@ export default function FiveOddsPredictionsPage() {
       try {
         setIsLoading(true);
         const data = await getPredictionsByBucket('5odds');
-        const flatPredictions = data.flat();
-        const sortedPredictions = (flatPredictions || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const sortedPredictions = (data || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         setPredictions(sortedPredictions);
       } catch (error) {
         console.error('Failed to fetch 5+ odds predictions:', error);

@@ -16,8 +16,7 @@ export default function BigOddsPredictionsPage() {
       try {
         setIsLoading(true);
         const data = await getPredictionsByBucket('big10');
-        const flatPredictions = data.flat();
-        const sortedPredictions = (flatPredictions || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const sortedPredictions = (data || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         setPredictions(sortedPredictions);
       } catch (error) {
         console.error('Failed to fetch 10+ odds predictions:', error);

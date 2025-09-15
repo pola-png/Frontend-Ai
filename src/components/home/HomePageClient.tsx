@@ -12,19 +12,23 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 
 const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, emptyMessage }: { title: string; predictions: Prediction[]; icon: React.ElementType; link: string, isLoading: boolean; emptyMessage: string; }) => {
+  const hasPredictions = predictions.length > 0;
+
   return (
-    <Card className="shadow-lg border-none bg-card/50 hover:bg-card/75 transition-colors duration-300">
-      <Link href={link} passHref className="flex flex-col h-full">
+    <Card className="shadow-lg border-none bg-card hover:bg-card/75 transition-colors duration-300">
+      <div className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
             <div className='flex items-center gap-2'>
               <Icon className="h-6 w-6" />
               {title}
             </div>
-            <Button variant="ghost" size="sm" className="text-sm font-medium">
-              View all
-              <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
+            <Link href={link} passHref>
+              <Button variant="ghost" size="sm" className="text-sm font-medium">
+                View all
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -40,14 +44,14 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
                   ))}
                 </CarouselContent>
              </Carousel>
-          ) : predictions.length > 0 ? (
+          ) : hasPredictions ? (
             <Carousel opts={{ align: 'start', loop: predictions.length > 3 }} className="w-full">
               <CarouselContent className="-ml-4">
                 {predictions.map((p) => (
                   <CarouselItem key={p._id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1">
+                    <Link href={link} passHref className="p-1 block h-full">
                       <PredictionCard prediction={p} />
-                    </div>
+                    </Link>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -64,14 +68,14 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
             </div>
           )}
         </CardContent>
-      </Link>
+      </div>
     </Card>
   );
 };
 
 const DashboardCard = ({ title, icon: Icon, link, description }: { title: string; icon: React.ElementType; link: string; description: string; }) => {
   return (
-     <Card className="shadow-lg border-none bg-card/50 hover:bg-card/75 transition-colors duration-300">
+     <Card className="shadow-lg border-none bg-card hover:bg-card/75 transition-colors duration-300">
       <Link href={link} passHref className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
@@ -112,7 +116,7 @@ export function HomePageClient() {
       try {
         setLoadingVip(true);
         const vipData = await getPredictionsByBucket("vip");
-        setVipPredictions(vipData.flat() || []);
+        setVipPredictions(vipData || []);
       } catch (err) { console.error("Failed to fetch vip predictions", err); } 
       finally { setLoadingVip(false); }
     };
@@ -121,7 +125,7 @@ export function HomePageClient() {
       try {
         setLoadingTwoOdds(true);
         const twoData = await getPredictionsByBucket("2odds");
-        setTwoOddsPredictions(twoData.flat() || []);
+        setTwoOddsPredictions(twoData || []);
       } catch (err) { console.error("Failed to fetch 2odds predictions", err); }
       finally { setLoadingTwoOdds(false); }
     };
@@ -130,7 +134,7 @@ export function HomePageClient() {
       try {
         setLoadingFiveOdds(true);
         const fiveData = await getPredictionsByBucket("5odds");
-        setFiveOddsPredictions(fiveData.flat() || []);
+        setFiveOddsPredictions(fiveData || []);
       } catch (err) { console.error("Failed to fetch 5odds predictions", err); }
       finally { setLoadingFiveOdds(false); }
     };
@@ -139,7 +143,7 @@ export function HomePageClient() {
       try {
         setLoadingBigOdds(true);
         const bigData = await getPredictionsByBucket("big10");
-        setBigOddsPredictions(bigData.flat() || []);
+        setBigOddsPredictions(bigData || []);
       } catch (err) { console.error("Failed to fetch big10 predictions", err); }
       finally { setLoadingBigOdds(false); }
     };
