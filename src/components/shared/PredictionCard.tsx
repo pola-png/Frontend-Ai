@@ -20,17 +20,17 @@ const StatusIcon = ({ status }: { status: Prediction['status'] }) => {
 };
 
 export function PredictionCard({ prediction }: { prediction: Prediction }) {
-  const { league, date, teams, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
+  const { league, date, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
   
   if (!prediction) {
     return null; // Or some fallback UI
   }
 
-  const homeTeamName = homeTeam?.name || teams.home;
-  const awayTeamName = awayTeam?.name || teams.away;
+  const homeTeamName = homeTeam?.name || 'Home';
+  const awayTeamName = awayTeam?.name || 'Away';
 
   return (
-    <Card className="flex h-full flex-col bg-card/50 transition-shadow duration-300 hover:shadow-xl hover:bg-card/75">
+    <Card className="flex h-full flex-col bg-card/75 transition-shadow duration-300 hover:shadow-xl hover:bg-card">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold tracking-tight">{league}</CardTitle>
