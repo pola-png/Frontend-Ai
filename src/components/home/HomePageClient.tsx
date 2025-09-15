@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Match } from '@/lib/types';
-import { getPredictionsByBucket, getResults } from '@/lib/api';
+import { getPredictionsByBucket } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
@@ -13,7 +13,7 @@ import { Button } from '../ui/button';
 
 const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, emptyMessage }: { title: string; predictions: Match[]; icon: React.ElementType; link: string, isLoading: boolean; emptyMessage: string; }) => {
   return (
-    <Card className="shadow-lg border-none">
+    <Card className="shadow-lg border-none bg-card">
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
           <div className='flex items-center gap-2'>
@@ -71,7 +71,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
 
 const DashboardCard = ({ title, icon: Icon, link, description }: { title: string; icon: React.ElementType; link: string; description: string; }) => {
   return (
-    <Card className="shadow-lg border-none">
+    <Card className="shadow-lg border-none bg-card">
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
           <div className='flex items-center gap-2'>
@@ -152,18 +152,6 @@ export function HomePageClient() {
         </Card>
       )}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <DashboardCard 
-          title="Upcoming Matches" 
-          icon={Calendar} 
-          link="/matches" 
-          description="View all upcoming matches on the dedicated page." 
-        />
-        <DashboardCard 
-          title="Match Results" 
-          icon={CheckCircle} 
-          link="/results" 
-          description="Check the latest results and prediction outcomes." 
-        />
         <PredictionCarousel 
           title="VIP Picks" 
           predictions={vipPredictions} 
@@ -195,6 +183,18 @@ export function HomePageClient() {
           link="/predictions/big10" 
           isLoading={loading} 
           emptyMessage="No high-risk, high-reward 10+ odds picks found."
+        />
+        <DashboardCard 
+          title="Upcoming Matches" 
+          icon={Calendar} 
+          link="/matches" 
+          description="View all upcoming matches on the dedicated page." 
+        />
+        <DashboardCard 
+          title="Match Results" 
+          icon={CheckCircle} 
+          link="/results" 
+          description="Check the latest results and prediction outcomes." 
         />
       </div>
     </div>
