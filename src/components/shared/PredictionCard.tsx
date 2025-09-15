@@ -7,6 +7,7 @@ import { Flame, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { GenerateExplanationDialog } from './GenerateExplanationDialog';
 
 const StatusIcon = ({ status }: { status: Match['prediction']['status'] }) => {
+  if (!status) return <Clock className="h-5 w-5 text-gray-500" />;
   switch (status) {
     case 'won':
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
@@ -19,8 +20,8 @@ const StatusIcon = ({ status }: { status: Match['prediction']['status'] }) => {
 };
 
 export function PredictionCard({ match }: { match: Match }) {
-  const { fixture, league, date, teams, prediction } = match;
-
+  const { league, date, teams, prediction } = match;
+  
   if (!prediction) {
     return null; // Or some fallback UI
   }
@@ -36,7 +37,7 @@ export function PredictionCard({ match }: { match: Match }) {
           <CardTitle className="text-lg font-semibold tracking-tight">{league}</CardTitle>
           {is_vip && <Badge variant="destructive" className="bg-yellow-500 text-black">VIP</Badge>}
         </div>
-        <p className="text-sm text-muted-foreground">{format(new Date(date), 'MMM d, yyyy - HH:mm')}</p>
+        <p className="text-sm text-muted-foreground">{date ? format(new Date(date), 'MMM d, yyyy - HH:mm') : 'Date TBD'}</p>
       </CardHeader>
       <CardContent className="flex-1 space-y-4">
         <div className="flex items-center justify-around text-center">
@@ -56,13 +57,13 @@ export function PredictionCard({ match }: { match: Match }) {
         </div>
         <div className="text-center">
           <p className="text-sm text-muted-foreground">Prediction</p>
-          <p className="font-bold text-primary">{predText}</p>
+          <p className="font-bold text-primary">{predText || '-'}</p>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
         <div className="flex items-center gap-2">
             <Flame className="h-5 w-5 text-accent" />
-            <span className="font-bold text-lg">{odds.toFixed(2)}</span>
+            <span className="font-bold text-lg">{odds ? odds.toFixed(2) : '-.--'}</span>
             <span className="text-sm text-muted-foreground">Odds</span>
         </div>
         <div className="flex items-center gap-4">

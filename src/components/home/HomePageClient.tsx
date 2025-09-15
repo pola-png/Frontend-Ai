@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Match, DashboardData, Result } from '@/lib/types';
-import { getDashboard, getPredictionsByBucket } from '@/lib/api';
+import type { Match, DashboardData } from '@/lib/types';
+import { getDashboard } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
@@ -24,20 +24,26 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading, error }
           </CardTitle>
         </CardHeader>
         <CardContent className="flex gap-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex-1 space-y-2">
-              <Skeleton className="h-40 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          ))}
+          <div className="w-full">
+             <Carousel opts={{ align: 'start', loop: false }} className="w-full">
+                <CarouselContent className="-ml-4">
+                  {[...Array(3)].map((_, i) => (
+                    <CarouselItem key={i} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                      <div className="p-1 space-y-2">
+                        <Skeleton className="h-56 w-full" />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+             </Carousel>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   if (error) return null;
-  if (predictions.length === 0) return null;
+  if (!predictions || predictions.length === 0) return null;
 
   return (
     <Card className="shadow-lg border-none">
@@ -71,52 +77,22 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading, error }
 };
 
 export function HomePageClient() {
-  const [vipPredictions, setVipPredictions] = useState<Match[]>([]);
-  const [twoOddsPredictions, setTwoOddsPredictions] = useState<Match[]>([]);
-  const [fiveOddsPredictions, setFiveOddsPredictions] = useState<Match[]>([]);
-  const [bigOddsPredictions, setBigOddsPredictions] = useState<Match[]>([]);
-  const [upcomingPredictions, setUpcomingPredictions] = useState<Match[]>([]);
-  
-  const [loading, setLoading] = useState({
-    vip: true,
-    twoOdds: true,
-    fiveOdds: true,
-    bigOdds: true,
-    upcoming: true,
-  });
-  
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        setLoading({ vip: true, twoOdds: true, fiveOdds: true, bigOdds: true, upcoming: true });
-        
-        const dashboardDataPromise = getDashboard();
-        const vipPromise = getPredictionsByBucket('vip');
-        const twoOddsPromise = getPredictionsByBucket('2odds');
-        const fiveOddsPromise = getPredictionsByBucket('5odds');
-        const bigOddsPromise = getPredictionsByBucket('big10');
-
-        const [dashboardData, vip, twoOdds, fiveOdds, bigOdds] = await Promise.all([
-          dashboardDataPromise.catch(e => { console.error('Failed to fetch dashboard data:', e); return { upcomingMatches: []}; }),
-          vipPromise.catch(e => { console.error('Failed to fetch vip predictions:', e); return []; }),
-          twoOddsPromise.catch(e => { console.error('Failed to fetch 2odds predictions:', e); return []; }),
-          fiveOddsPromise.catch(e => { console.error('Failed to fetch 5odds predictions:', e); return []; }),
-          bigOddsPromise.catch(e => { console.error('Failed to fetch big10 predictions:', e); return []; }),
-        ]);
-
-        setUpcomingPredictions(dashboardData.upcomingMatches || []);
-        setVipPredictions(vip || []);
-        setTwoOddsPredictions(twoOdds || []);
-        setFiveOddsPredictions(fiveOdds || []);
-        setBigOddsPredictions(bigOdds || []);
-
+        setLoading(true);
+        setError(null);
+        const dashboardData = await getDashboard();
+        setData(dashboardData);
       } catch (err) {
         console.error("Failed to fetch homepage data:", err);
         setError("There was a problem loading the prediction data. Please try again later.");
       } finally {
-        setLoading({ vip: false, twoOdds: false, fiveOdds: false, bigOdds: false, upcoming: false });
+        setLoading(false);
       }
     };
     
@@ -138,10 +114,10 @@ export function HomePageClient() {
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} isLoading={loading.vip} error={!!error} />
-        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} isLoading={loading.twoOdds} error={!!error} />
-        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} isLoading={loading.fiveOdds} error={!!error} />
-        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} isLoading={loading.bigOdds} error={!!error} />
+        <PredictionCarousel title="VIP Picks" predictions={data?.vipPredictions || []} icon={Crown} isLoading={loading} />
+        <PredictionCarousel title="Daily 2+ Odds" predictions={data?.twoOddsPredictions || []} icon={Trophy} isLoading={loading} />
+        <PredictionCarousel title="Value 5+ Odds" predictions={data?.fiveOddsPredictions || []} icon={Gem} isLoading={loading} />
+        <PredictionCarousel title="Big 10+ Odds" predictions={data?.bigOddsPredictions || []} icon={Rocket} isLoading={loading} />
       </div>
 
       <Card className="shadow-lg border-none">
@@ -161,7 +137,7 @@ export function HomePageClient() {
                     </TableRow>
                     </TableHeader>
                     <TableBody>
-                    {loading.upcoming ? (
+                    {loading ? (
                       [...Array(5)].map((_, i) => (
                         <TableRow key={i}>
                           <TableCell><Skeleton className="h-5 w-32" /></TableCell>
@@ -171,8 +147,8 @@ export function HomePageClient() {
                           <TableCell className="text-right hidden sm:table-cell"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
                         </TableRow>
                       ))
-                    ) : upcomingPredictions.length > 0 ? (
-                      upcomingPredictions.map((p) => (
+                    ) : data?.upcomingMatches && data.upcomingMatches.length > 0 ? (
+                      data.upcomingMatches.map((p) => (
                         <TableRow key={p._id}>
                             <TableCell className="font-medium">{p.fixture}</TableCell>
                             <TableCell className="hidden md:table-cell">{p.league}</TableCell>

@@ -9,7 +9,15 @@ const api = axios.create({
 // --- Dashboard ---
 export const getDashboard = async (): Promise<DashboardData> => {
   const res = await api.get("/dashboard");
-  return res.data || { upcomingMatches: [], recentResults: [], bucketCounts: {} };
+  return res.data || { 
+    upcomingMatches: [], 
+    recentResults: [], 
+    bucketCounts: {},
+    vipPredictions: [],
+    twoOddsPredictions: [],
+    fiveOddsPredictions: [],
+    bigOddsPredictions: []
+  };
 };
 
 // --- Predictions by bucket ---

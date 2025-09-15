@@ -50,4 +50,8 @@ export interface DashboardData {
   upcomingMatches: Match[];
   recentResults: Result[];
   bucketCounts: Record<string, number>;
+  vipPredictions: Match[];
+  twoOddsPredictions: Match[];
+  fiveOddsPredictions: Match[];
+  bigOddsPredictions: Match[];
 }
