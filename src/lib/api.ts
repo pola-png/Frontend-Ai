@@ -6,29 +6,34 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Normalization function to add match context to each prediction
+// Normalization function to flatten the grouped prediction response and
+// lift the match details from the populated `matchId` object to the top level of each prediction.
 const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
   if (!Array.isArray(predictionGroups)) return [];
   
   const flatPredictions: Prediction[] = [];
   
+  // The API returns an array of arrays (groups of predictions per match)
   predictionGroups.forEach(group => {
-    if (Array.isArray(group) && group.length > 0) {
-      // All predictions in a group belong to the same match.
-      // We can take the match details from the first prediction's populated matchId.
-      const matchData = group[0].matchId;
-      if (typeof matchData === 'object' && matchData !== null) {
-        group.forEach(p => {
-          flatPredictions.push({
-            ...p,
-            matchDateUtc: matchData.matchDateUtc,
-            homeTeam: matchData.homeTeam,
-            awayTeam: matchData.awayTeam,
-            league: matchData.league,
-            fixture: matchData.fixture,
-          });
-        });
-      }
+    if (Array.isArray(group)) {
+      group.forEach(p => {
+        // The match data (teams, date, etc.) is in the populated `matchId` object.
+        const matchData = p.matchId;
+
+        // Ensure matchData is a valid object before proceeding
+        if (typeof matchData === 'object' && matchData !== null && matchData.homeTeam && matchData.awayTeam) {
+            flatPredictions.push({
+              ...p,
+              // Hoist the match details to the top level for easier access in components.
+              matchId: matchData._id, // Keep the original matchId as a string
+              homeTeam: typeof matchData.homeTeam === 'object' ? matchData.homeTeam : { name: matchData.homeTeam },
+              awayTeam: typeof matchData.awayTeam === 'object' ? matchData.awayTeam : { name: matchData.awayTeam },
+              league: matchData.league,
+              fixture: matchData.fixture,
+              matchDateUtc: matchData.matchDateUtc,
+            });
+        }
+      });
     }
   });
 
@@ -39,6 +44,7 @@ const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
 export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[]> => {
   try {
     const res = await api.get(`/predictions/${bucket}`);
+    // The response is an array of arrays, e.g., [[pred1, pred2], [pred3]]
     const predictionGroups: any[][] = res.data || [];
     return normalizePredictions(predictionGroups);
   } catch (error) {
@@ -71,7 +77,6 @@ export const getUpcomingMatches = async (): Promise<Match[]> => {
 };
 
 // --- Match Summary ---
-// This is not used yet, but is here for future use.
 export const getMatchSummary = async (matchId: string): Promise<Match | null> => {
   try {
     const res = await api.get(`/summary/${matchId}`);

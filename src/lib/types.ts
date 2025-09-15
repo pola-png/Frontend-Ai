@@ -2,6 +2,8 @@ export interface Team {
   _id: string;
   name: string;
   logoUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface OneXTwo {
@@ -29,20 +31,20 @@ export interface Outcomes {
 
 export interface Prediction {
   _id: string;
-  matchId: string;
-  fixture: string;
-  league: string;
-  prediction: string;
-  odds: number;
-  confidence: number;
+  matchId: string | Match; // Can be a string or a populated Match object from the API
+  fixture?: string; // This will be added by normalization
+  league?: string; // This will be added by normalization
+  prediction?: string;
+  odds?: number;
+  confidence?: number;
   bucket: '2odds' | '5odds' | 'big10' | 'vip' | string;
   status: 'pending' | 'won' | 'lost';
-  is_vip: boolean;
+  is_vip?: boolean;
   outcomes?: Outcomes;
   analysis?: string;
-  matchDateUtc: string; // from parent Match
-  homeTeam: Team;      // from parent Match
-  awayTeam: Team;      // from parent Match
+  matchDateUtc?: string; // This will be added by normalization
+  homeTeam?: Team; // This will be added by normalization
+  awayTeam?: Team; // This will be added by normalization
 }
 
 export interface Match {
@@ -51,8 +53,8 @@ export interface Match {
   league: string;
   matchDateUtc: string;
   status: 'scheduled' | 'upcoming' | 'tba' | 'finished';
-  homeTeam: Team;
-  awayTeam: Team;
+  homeTeam: Team | string;
+  awayTeam: Team | string;
   scores?: {
     home: number;
     away: number;

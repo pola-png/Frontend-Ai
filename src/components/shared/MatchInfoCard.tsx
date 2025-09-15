@@ -12,8 +12,8 @@ type MatchInfoCardProps = {
 export function MatchInfoCard({ match }: MatchInfoCardProps) {
   const { homeTeam, awayTeam, league, matchDateUtc, predictions } = match;
 
-  const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : 'Home';
-  const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
+  const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : homeTeam;
+  const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : awayTeam;
 
   return (
     <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300 border-border/20">
@@ -24,7 +24,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
         <div className="flex w-full items-center justify-between text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase() || 'H'}</AvatarFallback>
             </Avatar>
             <span className="font-semibold text-sm text-center break-words">{homeTeamName}</span>
           </div>
@@ -33,7 +33,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>
             </Avatar>
             <span className="font-semibold text-sm text-center break-words">{awayTeamName}</span>
           </div>

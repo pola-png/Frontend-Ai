@@ -33,7 +33,7 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
     <Card className="flex h-full flex-col bg-card shadow-md transition-shadow duration-300 hover:shadow-xl border-border/20">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold tracking-tight">{league}</CardTitle>
+          <CardTitle className="text-lg font-semibold tracking-tight">{league || 'Match'}</CardTitle>
           {is_vip && <Badge variant="destructive" className="bg-yellow-500 text-black">VIP</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">{matchDateUtc ? format(new Date(matchDateUtc), 'MMM d, yyyy - HH:mm') : 'Date TBD'}</p>
