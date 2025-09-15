@@ -26,10 +26,9 @@ export function ResultCard({ match }: ResultCardProps) {
         <div className="flex w-full items-center justify-between text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              {/* Assuming homeTeam is populated, otherwise fallback */}
-              <AvatarFallback>{match.homeTeam?.name?.charAt(0).toUpperCase() || teams.home?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{teams.home?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{match.homeTeam?.name || teams.home}</span>
+            <span className="font-semibold text-sm text-center break-words">{teams.home}</span>
           </div>
           <div className="w-1/5">
             {scores ? (
@@ -40,9 +39,9 @@ export function ResultCard({ match }: ResultCardProps) {
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{match.awayTeam?.name?.charAt(0).toUpperCase() || teams.away?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{teams.away?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{match.awayTeam?.name || teams.away}</span>
+            <span className="font-semibold text-sm text-center break-words">{teams.away}</span>
           </div>
         </div>
 

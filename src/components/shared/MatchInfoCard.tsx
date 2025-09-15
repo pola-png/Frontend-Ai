@@ -1,22 +1,17 @@
-import type { Match, Result } from '@/lib/types';
+import type { Match } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
-import { Badge } from '../ui/badge';
-import { cn } from '@/lib/utils';
-import { Calendar, ShieldCheck, XCircle } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 type MatchInfoCardProps = {
-  item: Match | Result;
+  item: Match;
   type: 'match' | 'result';
 };
 
 export function MatchInfoCard({ item, type }: MatchInfoCardProps) {
   const { teams, league, date } = item;
 
-  const isResult = type === 'result' && 'scores' in item;
-
-  // Safeguard against undefined teams
   if (!teams) {
     return null; 
   }
@@ -35,11 +30,7 @@ export function MatchInfoCard({ item, type }: MatchInfoCardProps) {
             <span className="font-semibold text-sm text-center break-words">{teams.home}</span>
           </div>
           <div className="w-1/5">
-            {isResult ? (
-              <span className="text-2xl font-bold">{item.scores.home} - {item.scores.away}</span>
-            ) : (
-              <span className="text-xl font-bold text-muted-foreground">vs</span>
-            )}
+             <span className="text-xl font-bold text-muted-foreground">vs</span>
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
@@ -48,28 +39,6 @@ export function MatchInfoCard({ item, type }: MatchInfoCardProps) {
             <span className="font-semibold text-sm text-center break-words">{teams.away}</span>
           </div>
         </div>
-
-        {isResult && 'prediction' in item && item.prediction && (
-          <div className="text-center pt-2">
-            <p className="text-xs text-muted-foreground">Prediction: {item.prediction}</p>
-            {'outcome' in item && (
-              <Badge
-                variant={item.outcome === 'won' ? 'default' : 'destructive'}
-                className={cn(
-                  'mt-1',
-                  item.outcome === 'won' ? 'bg-green-500/20 text-green-700 border-green-500/30' : 'bg-red-500/20 text-red-700 border-red-500/30'
-                )}
-              >
-                {item.outcome === 'won' ? (
-                  <ShieldCheck className="mr-1 h-3 w-3" />
-                ) : (
-                  <XCircle className="mr-1 h-3 w-3" />
-                )}
-                {item.outcome.charAt(0).toUpperCase() + item.outcome.slice(1)}
-              </Badge>
-            )}
-          </div>
-        )}
       </CardContent>
       <CardFooter className="bg-muted/50 p-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">

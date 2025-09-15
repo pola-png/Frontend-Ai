@@ -1,37 +1,10 @@
 import axios from 'axios';
-import type { Match, DashboardData } from './types';
+import type { Match } from './types';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: { 'Content-Type': 'application/json' },
 });
-
-// This function is not used by the homepage anymore but can be kept for other uses.
-export const getDashboard = async (): Promise<DashboardData> => {
-  try {
-    const res = await api.get('/dashboard');
-    return res.data || { 
-      upcomingMatches: [], 
-      recentResults: [], 
-      bucketCounts: {},
-      vipPredictions: [],
-      twoOddsPredictions: [],
-      fiveOddsPredictions: [],
-      bigOddsPredictions: []
-    };
-  } catch (error) {
-    console.error("Failed to fetch dashboard data:", error);
-    return { 
-      upcomingMatches: [], 
-      recentResults: [], 
-      bucketCounts: {},
-      vipPredictions: [],
-      twoOddsPredictions: [],
-      fiveOddsPredictions: [],
-      bigOddsPredictions: []
-    };
-  }
-};
 
 // --- Predictions by bucket ---
 export const getPredictionsByBucket = async (bucket: string): Promise<Match[]> => {

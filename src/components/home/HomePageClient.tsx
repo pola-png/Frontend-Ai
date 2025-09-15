@@ -8,8 +8,6 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { PredictionCard } from '@/components/shared/PredictionCard';
 import { Crown, Trophy, Gem, Rocket, ArrowRight, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { MatchInfoCard } from '../shared/MatchInfoCard';
@@ -208,21 +206,12 @@ export function HomePageClient() {
 
   return (
     <div className="space-y-12">
-       {error && !loading && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            There was a problem loading some of the prediction data. Some sections may not be visible. Please try again later.
-          </AlertDescription>
-        </Alert>
-      )}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <MatchCarousel title="Upcoming Matches" matches={upcomingMatches} icon={Calendar} link="/matches" isLoading={loading} error={error} />
-        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} link="/predictions/vip" isLoading={loading} error={error} />
-        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} link="/predictions/2odds" isLoading={loading} error={error} />
-        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} link="/predictions/5odds" isLoading={loading} error={error} />
-        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} link="/predictions/big10" isLoading={loading} error={error} />
+        <MatchCarousel title="Upcoming Matches" matches={upcomingMatches} icon={Calendar} link="/matches" isLoading={loading} error={error && upcomingMatches.length === 0} />
+        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} link="/predictions/vip" isLoading={loading} error={error && vipPredictions.length === 0} />
+        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} link="/predictions/2odds" isLoading={loading} error={error && twoOddsPredictions.length === 0} />
+        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} link="/predictions/5odds" isLoading={loading} error={error && fiveOddsPredictions.length === 0} />
+        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} link="/predictions/big10" isLoading={loading} error={error && bigOddsPredictions.length === 0} />
       </div>
     </div>
   );
