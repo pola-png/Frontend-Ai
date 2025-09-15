@@ -6,35 +6,65 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Normalization function to flatten the grouped prediction response and
-// lift the match details from the populated `matchId` object to the top level of each prediction.
+/**
+ * Normalizes the predictions response from the API. The API returns predictions
+ * grouped by match, which is an array of arrays. This function flattens the groups
+ * and, crucially, lifts the nested match details (like teams and date) from the
+`* matchId` object to the top level of each prediction object for easier use in UI components.
+ */
 const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
-  if (!Array.isArray(predictionGroups)) return [];
-  
-  // The API returns an array of arrays (groups of predictions per match)
+  if (!Array.isArray(predictionGroups)) {
+    console.error("normalizePredictions expected an array, but received:", predictionGroups);
+    return [];
+  }
+
   return predictionGroups.flat().map(p => {
-    const match = p.matchId || {};
+    if (!p || !p.matchId) return null;
+
+    const match = p.matchId;
+    const homeTeam = typeof match.homeTeam === 'object' ? match.homeTeam : { name: match.homeTeam || 'Home' };
+    const awayTeam = typeof match.awayTeam === 'object' ? match.awayTeam : { name: match.awayTeam || 'Away' };
+    
+    // Determine the textual prediction if not present
+    let textualPrediction = p.prediction;
+    if (!textualPrediction && p.outcomes?.oneXTwo) {
+      const { home, draw, away } = p.outcomes.oneXTwo;
+      const maxOdd = Math.max(home, draw, away);
+      if (maxOdd === home) textualPrediction = 'Home Win';
+      else if (maxOdd === away) textualPrediction = 'Away Win';
+      else textualPrediction = 'Draw';
+    }
+
+    // Determine the odds if not present
+    let predictionOdds = p.odds;
+    if (!predictionOdds && p.outcomes?.oneXTwo) {
+        const { home, draw, away } = p.outcomes.oneXTwo;
+        predictionOdds = Math.max(home, draw, away);
+    }
+
+
     return {
       _id: p._id,
-      prediction: p.prediction,
+      prediction: textualPrediction,
       bucket: p.bucket,
       confidence: p.confidence,
-      odds: p.odds,
+      odds: predictionOdds,
       outcomes: p.outcomes,
       status: p.status,
       is_vip: p.is_vip,
       analysis: p.analysis,
 
-      // Flatten match info from the nested matchId object
+      // --- Flattened from p.matchId ---
       matchId: match._id,
-      homeTeam: typeof match.homeTeam === 'object' ? match.homeTeam : { name: match.homeTeam },
-      awayTeam: typeof match.awayTeam === 'object' ? match.awayTeam : { name: match.awayTeam },
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
       league: match.league,
       fixture: match.fixture,
       matchDateUtc: match.matchDateUtc,
     };
-  });
+  }).filter((p): p is Prediction => p !== null);
 };
+
 
 // --- Predictions by bucket ---
 export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[]> => {

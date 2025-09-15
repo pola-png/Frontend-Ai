@@ -31,20 +31,21 @@ export interface Outcomes {
 
 export interface Prediction {
   _id: string;
-  matchId: string | Match; // Can be a string or a populated Match object from the API
-  fixture?: string; 
-  league?: string; 
-  prediction?: string;
+  matchId: string | Match; // Can be a string or a populated Match object
+  prediction?: string; // The textual prediction, e.g. "Home Win"
+  outcomes?: Outcomes;
   odds?: number;
   confidence?: number;
   bucket: '2odds' | '5odds' | 'big10' | 'vip' | string;
   status: 'pending' | 'won' | 'lost';
   is_vip?: boolean;
-  outcomes?: Outcomes;
   analysis?: string;
-  matchDateUtc?: string; 
-  homeTeam?: Team; 
-  awayTeam?: Team; 
+  
+  // Flattened properties from Match for UI convenience
+  homeTeam?: Team;
+  awayTeam?: Team;
+  league?: string;
+  matchDateUtc?: string;
 }
 
 export interface Match {
@@ -59,7 +60,9 @@ export interface Match {
     home: number;
     away: number;
   };
+  // A match can have multiple predictions from different buckets
   predictions?: Prediction[];
-  prediction?: Prediction; // For results page
+  // For the results page, a single relevant prediction might be attached
+  prediction?: Prediction; 
   outcome?: 'won' | 'lost';
 }
