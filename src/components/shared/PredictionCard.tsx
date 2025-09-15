@@ -1,4 +1,4 @@
-import { Match } from '@/lib/types';
+import { Prediction } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { Flame, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { GenerateExplanationDialog } from './GenerateExplanationDialog';
 
-const StatusIcon = ({ status }: { status: Match['prediction']['status'] }) => {
+const StatusIcon = ({ status }: { status: Prediction['status'] }) => {
   if (!status) return <Clock className="h-5 w-5 text-gray-500" />;
   switch (status) {
     case 'won':
@@ -19,19 +19,18 @@ const StatusIcon = ({ status }: { status: Match['prediction']['status'] }) => {
   }
 };
 
-export function PredictionCard({ match }: { match: Match }) {
-  const { league, date, teams, prediction } = match;
+export function PredictionCard({ prediction }: { prediction: Prediction }) {
+  const { league, date, teams, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
   
   if (!prediction) {
     return null; // Or some fallback UI
   }
-  
-  const { odds, prediction: predText, status, is_vip } = prediction;
-  const homeTeam = teams.home;
-  const awayTeam = teams.away;
+
+  const homeTeamName = homeTeam?.name || teams.home;
+  const awayTeamName = awayTeam?.name || teams.away;
 
   return (
-    <Card className="flex h-full flex-col bg-card transition-shadow duration-300 hover:shadow-xl">
+    <Card className="flex h-full flex-col bg-card/50 transition-shadow duration-300 hover:shadow-xl hover:bg-card/75">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold tracking-tight">{league}</CardTitle>
@@ -43,16 +42,16 @@ export function PredictionCard({ match }: { match: Match }) {
         <div className="flex items-center justify-around text-center">
           <div className="flex flex-col items-center gap-2">
             <Avatar>
-              <AvatarFallback>{homeTeam?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-medium">{homeTeam}</span>
+            <span className="font-medium">{homeTeamName}</span>
           </div>
           <span className="text-2xl font-bold text-muted-foreground">vs</span>
           <div className="flex flex-col items-center gap-2">
             <Avatar>
-              <AvatarFallback>{awayTeam?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-medium">{awayTeam}</span>
+            <span className="font-medium">{awayTeamName}</span>
           </div>
         </div>
         <div className="text-center">
@@ -67,7 +66,7 @@ export function PredictionCard({ match }: { match: Match }) {
             <span className="text-sm text-muted-foreground">Odds</span>
         </div>
         <div className="flex items-center gap-4">
-          <GenerateExplanationDialog match={match} />
+          <GenerateExplanationDialog prediction={prediction} />
           <StatusIcon status={status} />
         </div>
       </CardFooter>

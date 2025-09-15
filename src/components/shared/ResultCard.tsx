@@ -11,14 +11,17 @@ type ResultCardProps = {
 };
 
 export function ResultCard({ match }: ResultCardProps) {
-  const { teams, league, date, scores, prediction, outcome } = match;
+  const { teams, league, date, scores, prediction, outcome, homeTeam, awayTeam } = match;
 
   if (!teams) {
-    return null; 
+    return null;
   }
+  
+  const homeTeamName = homeTeam?.name || teams.home;
+  const awayTeamName = awayTeam?.name || teams.away;
 
   return (
-    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300">
+    <Card className="flex flex-col h-full bg-card/50 shadow-md hover:shadow-xl hover:bg-card/75 transition-shadow duration-300">
       <CardHeader>
         <CardTitle className="text-base font-medium text-muted-foreground truncate">{league}</CardTitle>
       </CardHeader>
@@ -26,9 +29,9 @@ export function ResultCard({ match }: ResultCardProps) {
         <div className="flex w-full items-center justify-between text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{teams.home?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{teams.home}</span>
+            <span className="font-semibold text-sm text-center break-words">{homeTeamName}</span>
           </div>
           <div className="w-1/5">
             {scores ? (
@@ -39,9 +42,9 @@ export function ResultCard({ match }: ResultCardProps) {
           </div>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-              <AvatarFallback>{teams.away?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-sm text-center break-words">{teams.away}</span>
+            <span className="font-semibold text-sm text-center break-words">{awayTeamName}</span>
           </div>
         </div>
 

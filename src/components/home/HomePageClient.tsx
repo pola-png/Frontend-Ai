@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Match } from '@/lib/types';
-import { getPredictionsByBucket, getUpcomingMatches } from '@/lib/api';
+import type { Prediction } from '@/lib/types';
+import { getPredictionsByBucket } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PredictionCard } from '@/components/shared/PredictionCard';
@@ -11,9 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 
-const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, emptyMessage }: { title: string; predictions: Match[]; icon: React.ElementType; link: string, isLoading: boolean; emptyMessage: string; }) => {
+const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, emptyMessage }: { title: string; predictions: Prediction[]; icon: React.ElementType; link: string, isLoading: boolean; emptyMessage: string; }) => {
   return (
-    <Card className="shadow-lg border-none bg-card hover:bg-muted/50 transition-colors duration-300">
+    <Card className="shadow-lg border-none bg-card/50 hover:bg-card/75 transition-colors duration-300">
       <Link href={link} passHref className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
@@ -46,7 +46,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
                 {predictions.map((p) => (
                   <CarouselItem key={p._id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                     <div className="p-1">
-                      <PredictionCard match={p} />
+                      <PredictionCard prediction={p} />
                     </div>
                   </CarouselItem>
                 ))}
@@ -71,7 +71,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
 
 const DashboardCard = ({ title, icon: Icon, link, description }: { title: string; icon: React.ElementType; link: string; description: string; }) => {
   return (
-     <Card className="shadow-lg border-none bg-card hover:bg-muted/50 transition-colors duration-300">
+     <Card className="shadow-lg border-none bg-card/50 hover:bg-card/75 transition-colors duration-300">
       <Link href={link} passHref className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-xl font-bold text-primary">
@@ -97,10 +97,10 @@ const DashboardCard = ({ title, icon: Icon, link, description }: { title: string
 
 
 export function HomePageClient() {
-  const [vipPredictions, setVipPredictions] = useState<Match[]>([]);
-  const [twoOddsPredictions, setTwoOddsPredictions] = useState<Match[]>([]);
-  const [fiveOddsPredictions, setFiveOddsPredictions] = useState<Match[]>([]);
-  const [bigOddsPredictions, setBigOddsPredictions] = useState<Match[]>([]);
+  const [vipPredictions, setVipPredictions] = useState<Prediction[]>([]);
+  const [twoOddsPredictions, setTwoOddsPredictions] = useState<Prediction[]>([]);
+  const [fiveOddsPredictions, setFiveOddsPredictions] = useState<Prediction[]>([]);
+  const [bigOddsPredictions, setBigOddsPredictions] = useState<Prediction[]>([]);
   
   const [loadingVip, setLoadingVip] = useState(true);
   const [loadingTwoOdds, setLoadingTwoOdds] = useState(true);
@@ -112,7 +112,7 @@ export function HomePageClient() {
       try {
         setLoadingVip(true);
         const vipData = await getPredictionsByBucket("vip");
-        setVipPredictions(vipData || []);
+        setVipPredictions(vipData.flat() || []);
       } catch (err) { console.error("Failed to fetch vip predictions", err); } 
       finally { setLoadingVip(false); }
     };
@@ -121,7 +121,7 @@ export function HomePageClient() {
       try {
         setLoadingTwoOdds(true);
         const twoData = await getPredictionsByBucket("2odds");
-        setTwoOddsPredictions(twoData || []);
+        setTwoOddsPredictions(twoData.flat() || []);
       } catch (err) { console.error("Failed to fetch 2odds predictions", err); }
       finally { setLoadingTwoOdds(false); }
     };
@@ -130,7 +130,7 @@ export function HomePageClient() {
       try {
         setLoadingFiveOdds(true);
         const fiveData = await getPredictionsByBucket("5odds");
-        setFiveOddsPredictions(fiveData || []);
+        setFiveOddsPredictions(fiveData.flat() || []);
       } catch (err) { console.error("Failed to fetch 5odds predictions", err); }
       finally { setLoadingFiveOdds(false); }
     };
@@ -139,7 +139,7 @@ export function HomePageClient() {
       try {
         setLoadingBigOdds(true);
         const bigData = await getPredictionsByBucket("big10");
-        setBigOddsPredictions(bigData || []);
+        setBigOddsPredictions(bigData.flat() || []);
       } catch (err) { console.error("Failed to fetch big10 predictions", err); }
       finally { setLoadingBigOdds(false); }
     };

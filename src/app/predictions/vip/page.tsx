@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { getPredictionsByBucket } from '@/lib/api';
 import { PredictionCard } from '@/components/shared/PredictionCard';
-import { Match } from '@/lib/types';
+import { Prediction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Crown } from 'lucide-react';
 
 export default function VipPredictionsPage() {
-  const [matches, setMatches] = useState<Match[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -16,8 +16,9 @@ export default function VipPredictionsPage() {
       try {
         setIsLoading(true);
         const data = await getPredictionsByBucket('vip');
-        const sortedMatches = (data || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        setMatches(sortedMatches);
+        const flatPredictions = data.flat();
+        const sortedPredictions = (flatPredictions || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        setPredictions(sortedPredictions);
       } catch (error) {
         console.error('Failed to fetch VIP predictions:', error);
       } finally {
@@ -40,10 +41,10 @@ export default function VipPredictionsPage() {
             <Skeleton key={i} className="h-56 w-full" />
           ))}
         </div>
-      ) : matches.length > 0 ? (
+      ) : predictions.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {matches.map((match) => (
-            <PredictionCard key={match._id} match={match} />
+          {predictions.map((prediction) => (
+            <PredictionCard key={prediction._id} prediction={prediction} />
           ))}
         </div>
       ) : (

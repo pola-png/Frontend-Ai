@@ -6,6 +6,13 @@ export interface Team {
 
 export interface Prediction {
   _id: string;
+  fixture: string;
+  league: string;
+  date: string;
+  teams: {
+    home: string;
+    away: string;
+  };
   prediction: string;
   odds: number;
   status: 'pending' | 'won' | 'lost';
@@ -13,10 +20,17 @@ export interface Prediction {
   analysis?: string;
   confidence?: number;
   bucket?: string;
+  scores?: {
+    home: number;
+    away: number;
+  };
+  outcome?: 'won' | 'lost';
+  homeTeam?: Team; // This is populated by backend
+  awayTeam?: Team; // This is populated by backend
 }
 
 export interface Match {
-  _id:string;
+  _id: string;
   fixture: string;
   league: string;
   date: string; // This will be matchDateUtc from backend
@@ -29,19 +43,9 @@ export interface Match {
     home: number;
     away: number;
   };
-  homeTeam?: Team; 
+  homeTeam?: Team;
   awayTeam?: Team;
-  prediction?: Partial<Prediction>;
+  prediction?: Partial<Prediction>; // A single prediction for results page
+  predictions?: Partial<Prediction>[]; // Multiple predictions for upcoming matches
   outcome?: 'won' | 'lost';
-}
-
-
-export interface DashboardData {
-  upcomingMatches: Match[];
-  recentResults: Match[];
-  bucketCounts: Record<string, number>;
-  vipPredictions: Match[];
-  twoOddsPredictions: Match[];
-  fiveOddsPredictions: Match[];
-  bigOddsPredictions: Match[];
 }
