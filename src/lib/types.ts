@@ -1,25 +1,21 @@
+export interface Team {
+  name: string;
+  logo?: string;
+}
+
 export interface Prediction {
-  id: string;
-  fixture: string;
-  league: string;
+  _id: string;
   prediction: string;
   odds: number;
-  date: string;
   status: 'pending' | 'won' | 'lost';
   is_vip: boolean;
-  teams: {
-    home: string;
-    away: string;
-  };
-  scores: {
-    home: number | null;
-    away: number | null;
-  };
-  analysis?: string; // Analysis is optional
+  analysis?: string;
+  confidence?: number;
+  bucket?: string;
 }
 
 export interface Match {
-  id: string;
+  _id: string;
   fixture: string;
   league: string;
   date: string;
@@ -27,11 +23,13 @@ export interface Match {
     home: string;
     away: string;
   };
-  prediction?: Partial<Prediction>; // Prediction is optional and can be partial
+  homeTeam?: Team;
+  awayTeam?: Team;
+  prediction?: Partial<Prediction>;
 }
 
 export interface Result {
-  id: string;
+  _id: string;
   fixture: string;
   league: string;
   date: string;

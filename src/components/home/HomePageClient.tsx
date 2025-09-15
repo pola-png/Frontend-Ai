@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Match } from '@/lib/types';
+import type { Match, DashboardData, Result } from '@/lib/types';
 import { getDashboard, getPredictionsByBucket } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -51,7 +51,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, isLoading, error }
         <Carousel opts={{ align: 'start', loop: predictions.length > 3 }} className="w-full">
           <CarouselContent className="-ml-4">
             {predictions.map((p) => (
-              <CarouselItem key={p.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+              <CarouselItem key={p._id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
                   <PredictionCard match={p} />
                 </div>
@@ -90,6 +90,8 @@ export function HomePageClient() {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
+        setLoading({ vip: true, twoOdds: true, fiveOdds: true, bigOdds: true, upcoming: true });
+        
         const dashboardDataPromise = getDashboard();
         const vipPromise = getPredictionsByBucket('vip');
         const twoOddsPromise = getPredictionsByBucket('2odds');
@@ -97,11 +99,11 @@ export function HomePageClient() {
         const bigOddsPromise = getPredictionsByBucket('big10');
 
         const [dashboardData, vip, twoOdds, fiveOdds, bigOdds] = await Promise.all([
-          dashboardDataPromise.catch(e => { console.error('Failed to fetch dashboard data:', e); return { upcomingMatches: []}; }).finally(() => setLoading(prev => ({...prev, upcoming: false}))),
-          vipPromise.catch(e => { console.error('Failed to fetch vip predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, vip: false}))),
-          twoOddsPromise.catch(e => { console.error('Failed to fetch 2odds predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, twoOdds: false}))),
-          fiveOddsPromise.catch(e => { console.error('Failed to fetch 5odds predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, fiveOdds: false}))),
-          bigOddsPromise.catch(e => { console.error('Failed to fetch big10 predictions:', e); return []; }).finally(() => setLoading(prev => ({...prev, bigOdds: false}))),
+          dashboardDataPromise.catch(e => { console.error('Failed to fetch dashboard data:', e); return { upcomingMatches: []}; }),
+          vipPromise.catch(e => { console.error('Failed to fetch vip predictions:', e); return []; }),
+          twoOddsPromise.catch(e => { console.error('Failed to fetch 2odds predictions:', e); return []; }),
+          fiveOddsPromise.catch(e => { console.error('Failed to fetch 5odds predictions:', e); return []; }),
+          bigOddsPromise.catch(e => { console.error('Failed to fetch big10 predictions:', e); return []; }),
         ]);
 
         setUpcomingPredictions(dashboardData.upcomingMatches || []);
@@ -113,6 +115,7 @@ export function HomePageClient() {
       } catch (err) {
         console.error("Failed to fetch homepage data:", err);
         setError("There was a problem loading the prediction data. Please try again later.");
+      } finally {
         setLoading({ vip: false, twoOdds: false, fiveOdds: false, bigOdds: false, upcoming: false });
       }
     };
@@ -170,7 +173,7 @@ export function HomePageClient() {
                       ))
                     ) : upcomingPredictions.length > 0 ? (
                       upcomingPredictions.map((p) => (
-                        <TableRow key={p.id}>
+                        <TableRow key={p._id}>
                             <TableCell className="font-medium">{p.fixture}</TableCell>
                             <TableCell className="hidden md:table-cell">{p.league}</TableCell>
                             <TableCell>{p.prediction?.prediction || '-'}</TableCell>
