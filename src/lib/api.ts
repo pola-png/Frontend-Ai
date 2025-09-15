@@ -7,10 +7,9 @@ const api = axios.create({
 });
 
 /**
- * Normalizes the predictions response from the API. The API returns predictions
- * grouped by match, which is an array of arrays. This function flattens the groups
- * and, crucially, lifts the nested match details (like teams and date) from the
-`* matchId` object to the top level of each prediction object for easier use in UI components.
+ * Normalizes predictions from endpoints where match data is nested inside `matchId`.
+ * This function flattens the structure so UI components can easily access match details.
+ * e.g., prediction.homeTeam.name instead of prediction.matchId.homeTeam.name
  */
 const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
   if (!Array.isArray(predictionGroups)) {
@@ -27,19 +26,20 @@ const normalizePredictions = (predictionGroups: any[][]): Prediction[] => {
     
     // Determine the textual prediction if not present
     let textualPrediction = p.prediction;
+    let predictionOdds = p.odds;
+
     if (!textualPrediction && p.outcomes?.oneXTwo) {
       const { home, draw, away } = p.outcomes.oneXTwo;
-      const maxOdd = Math.max(home, draw, away);
-      if (maxOdd === home) textualPrediction = 'Home Win';
-      else if (maxOdd === away) textualPrediction = 'Away Win';
+      const maxOddValue = Math.max(home, draw, away);
+      
+      if (maxOddValue === home) textualPrediction = 'Home Win';
+      else if (maxOddValue === away) textualPrediction = 'Away Win';
       else textualPrediction = 'Draw';
-    }
 
-    // Determine the odds if not present
-    let predictionOdds = p.odds;
-    if (!predictionOdds && p.outcomes?.oneXTwo) {
-        const { home, draw, away } = p.outcomes.oneXTwo;
-        predictionOdds = Math.max(home, draw, away);
+      // Set odds to the highest probability value if not explicitly present
+      if (!predictionOdds) {
+        predictionOdds = maxOddValue;
+      }
     }
 
 
