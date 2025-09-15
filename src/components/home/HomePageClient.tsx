@@ -167,13 +167,13 @@ export function HomePageClient() {
   const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
   
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        setError(null);
+        setError(false);
         
         const [
           vipData, 
@@ -197,7 +197,7 @@ export function HomePageClient() {
 
       } catch (err) {
         console.error("Failed to fetch homepage data:", err);
-        setError("There was a problem loading the prediction data. Please try again later.");
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -206,26 +206,23 @@ export function HomePageClient() {
     fetchAllData();
   }, []);
 
-  if (error && !loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
+  return (
+    <div className="space-y-12">
+       {error && !loading && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>
+            There was a problem loading some of the prediction data. Some sections may not be visible. Please try again later.
+          </AlertDescription>
         </Alert>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-12">
+      )}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <MatchCarousel title="Upcoming Matches" matches={upcomingMatches} icon={Calendar} link="/matches" isLoading={loading} />
-        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} link="/predictions/vip" isLoading={loading} />
-        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} link="/predictions/2odds" isLoading={loading} />
-        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} link="/predictions/5odds" isLoading={loading} />
-        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} link="/predictions/big10" isLoading={loading} />
+        <MatchCarousel title="Upcoming Matches" matches={upcomingMatches} icon={Calendar} link="/matches" isLoading={loading} error={error} />
+        <PredictionCarousel title="VIP Picks" predictions={vipPredictions} icon={Crown} link="/predictions/vip" isLoading={loading} error={error} />
+        <PredictionCarousel title="Daily 2+ Odds" predictions={twoOddsPredictions} icon={Trophy} link="/predictions/2odds" isLoading={loading} error={error} />
+        <PredictionCarousel title="Value 5+ Odds" predictions={fiveOddsPredictions} icon={Gem} link="/predictions/5odds" isLoading={loading} error={error} />
+        <PredictionCarousel title="Big 10+ Odds" predictions={bigOddsPredictions} icon={Rocket} link="/predictions/big10" isLoading={loading} error={error} />
       </div>
     </div>
   );
