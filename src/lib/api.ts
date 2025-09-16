@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Match, Prediction, Team } from './types';
+import type { Match, Prediction } from './types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -9,10 +9,10 @@ const api = axios.create({
 /**
  * Given a prediction's `oneXTwo` outcomes, determines the textual prediction
  * (e.g., "Home Win") and the corresponding odds value.
- * @param outcomes - The `outcomes` object from a raw prediction.
- * @returns An object with the determined `prediction` string and `odds` number.
  */
-const getPredictionDetailsFromOutcomes = (outcomes: any): { prediction: string; odds: number } => {
+const getPredictionDetailsFromOutcomes = (
+  outcomes: any
+): { prediction: string; odds: number } => {
   if (!outcomes?.oneXTwo) {
     return { prediction: 'N/A', odds: 1.0 };
   }
@@ -25,20 +25,21 @@ const getPredictionDetailsFromOutcomes = (outcomes: any): { prediction: string; 
 };
 
 /**
- * Normalizes a raw prediction object from the API into a flattened,
- * UI-friendly `Prediction` object. It extracts nested match details.
- * @param rawPrediction - The raw prediction object from the API, which may have nested match data.
- * @returns A normalized `Prediction` object, or `null` if the input is invalid.
+ * Normalize a raw prediction into a UI-friendly Prediction object.
  */
 const normalizePrediction = (rawPrediction: any): Prediction | null => {
-  // The match data can either be at the root (for /results) or nested in matchId (for /predictions)
-  const matchData = rawPrediction.matchId && typeof rawPrediction.matchId === 'object' ? rawPrediction.matchId : rawPrediction;
+  const matchData =
+    rawPrediction.matchId && typeof rawPrediction.matchId === 'object'
+      ? rawPrediction.matchId
+      : rawPrediction;
 
   if (!matchData || !matchData.homeTeam || !matchData.awayTeam) {
     return null;
   }
-  
-  const { prediction, odds } = getPredictionDetailsFromOutcomes(rawPrediction.outcomes);
+
+  const { prediction, odds } = getPredictionDetailsFromOutcomes(
+    rawPrediction.outcomes
+  );
 
   return {
     id: rawPrediction._id,
@@ -51,7 +52,7 @@ const normalizePrediction = (rawPrediction: any): Prediction | null => {
     is_vip: rawPrediction.is_vip,
     analysis: rawPrediction.analysis,
 
-    // --- Flattened from matchData ---
+    // Flatten match details
     matchId: matchData._id,
     homeTeam: matchData.homeTeam,
     awayTeam: matchData.awayTeam,
@@ -60,33 +61,27 @@ const normalizePrediction = (rawPrediction: any): Prediction | null => {
   };
 };
 
-
 /**
- * Normalizes a raw match object from the API into a UI-friendly `Match` object.
- * It ensures nested predictions are also normalized.
- * @param rawMatch - The raw match object from the API.
- * @returns A normalized `Match` object, or `null` if the input is invalid.
+ * Normalize a raw match object.
  */
 const normalizeMatch = (rawMatch: any): Match | null => {
-  if (!rawMatch || !rawMatch._id || !rawMatch.homeTeam || !raw-match.awayTeam) {
+  if (!rawMatch || !rawMatch._id || !rawMatch.homeTeam || !rawMatch.awayTeam) {
     return null;
   }
-  
-  // For results, the main prediction is at the top level.
-  // We normalize it and put it into an array for consistency.
+
   let topLevelPrediction: Prediction | null = null;
   if (rawMatch.prediction) {
-    // Attach the match context to the prediction before normalizing
     const predWithContext = { ...rawMatch.prediction, ...rawMatch };
     topLevelPrediction = normalizePrediction(predWithContext);
   }
 
-  // Also normalize any predictions in the nested array
   const nestedPredictions = (rawMatch.predictions || [])
     .map(normalizePrediction)
     .filter((p): p is Prediction => p !== null);
 
-  const allPredictions = topLevelPrediction ? [topLevelPrediction, ...nestedPredictions] : nestedPredictions;
+  const allPredictions = topLevelPrediction
+    ? [topLevelPrediction, ...nestedPredictions]
+    : nestedPredictions;
 
   return {
     id: rawMatch._id,
@@ -97,26 +92,25 @@ const normalizeMatch = (rawMatch: any): Match | null => {
     awayTeam: rawMatch.awayTeam,
     scores: rawMatch.scores,
     predictions: allPredictions,
-    prediction: topLevelPrediction || undefined, // Keep single prediction for ResultCard
+    prediction: topLevelPrediction || undefined,
     outcome: rawMatch.outcome,
   };
 };
 
 /**
- * Fetches predictions for a specific bucket (e.g., 'vip', '2odds').
- * The API returns groups of predictions per match, so we flatten them.
- * @param bucket - The prediction bucket to fetch.
- * @returns A promise that resolves to an array of normalized `Prediction` objects.
+ * Fetch predictions by bucket.
  */
-export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[]> => {
+export const getPredictionsByBucket = async (
+  bucket: string
+): Promise<Prediction[]> => {
   try {
     const res = await api.get(`/predictions/${bucket}`);
-    const predictionGroups: any[][] = res.data || [];
-    
+    const predictionGroups: any[][] = res.data?.data || [];
+
     if (!Array.isArray(predictionGroups)) return [];
-    
+
     return predictionGroups
-      .flat() // [[p1, p2], [p3]] -> [p1, p2, p3]
+      .flat()
       .map(normalizePrediction)
       .filter((p): p is Prediction => p !== null);
   } catch (error) {
@@ -126,48 +120,42 @@ export const getPredictionsByBucket = async (bucket: string): Promise<Prediction
 };
 
 /**
- * Fetches finished match results.
- * @returns A promise that resolves to an array of normalized `Match` objects.
+ * Fetch finished match results.
  */
 export const getResults = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/results');
-    const rawMatches: any[] = res.data || [];
-    return rawMatches
-      .map(normalizeMatch)
-      .filter((m): m is Match => m !== null);
+    const rawMatches: any[] = res.data?.data || [];
+    return rawMatches.map(normalizeMatch).filter((m): m is Match => m !== null);
   } catch (error) {
-    console.error("Failed to fetch results:", error);
+    console.error('Failed to fetch results:', error);
     return [];
   }
 };
 
 /**
- * Fetches upcoming matches.
- * @returns A promise that resolves to an array of normalized `Match` objects.
+ * Fetch upcoming matches.
  */
 export const getUpcomingMatches = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/matches/upcoming');
-    const rawMatches: any[] = res.data || [];
-    return rawMatches
-      .map(normalizeMatch)
-      .filter((m): m is Match => m !== null);
+    const rawMatches: any[] = res.data?.data || [];
+    return rawMatches.map(normalizeMatch).filter((m): m is Match => m !== null);
   } catch (error) {
-    console.error("Failed to fetch upcoming matches:", error);
+    console.error('Failed to fetch upcoming matches:', error);
     return [];
   }
 };
 
 /**
- * Fetches a single match summary.
- * @param matchId - The ID of the match to fetch.
- * @returns A promise that resolves to a single normalized `Match` object or null.
+ * Fetch match summary.
  */
-export const getMatchSummary = async (matchId: string): Promise<Match | null> => {
+export const getMatchSummary = async (
+  matchId: string
+): Promise<Match | null> => {
   try {
     const res = await api.get(`/summary/${matchId}`);
-    return normalizeMatch(res.data);
+    return normalizeMatch(res.data?.data);
   } catch (error) {
     console.error(`Failed to fetch summary for match ${matchId}:`, error);
     return null;
