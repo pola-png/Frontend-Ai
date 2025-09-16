@@ -68,7 +68,7 @@ const normalizePrediction = (rawPrediction: any): Prediction | null => {
  * @returns A normalized `Match` object, or `null` if the input is invalid.
  */
 const normalizeMatch = (rawMatch: any): Match | null => {
-  if (!rawMatch || !rawMatch._id || !rawMatch.homeTeam || !rawMatch.awayTeam) {
+  if (!rawMatch || !rawMatch._id || !rawMatch.homeTeam || !raw-match.awayTeam) {
     return null;
   }
   

@@ -124,7 +124,7 @@ export function HomePageClient() {
     const fetchTwoOdds = async () => {
       try {
         setLoadingTwoOdds(true);
-        const twoData = await getPredictionsByBucket("2odds");
+        const twoData = await getPredictionsByBucket("daily2");
         setTwoOddsPredictions(twoData || []);
       } catch (err) { console.error("Failed to fetch 2odds predictions", err); }
       finally { setLoadingTwoOdds(false); }
@@ -133,7 +133,7 @@ export function HomePageClient() {
     const fetchFiveOdds = async () => {
       try {
         setLoadingFiveOdds(true);
-        const fiveData = await getPredictionsByBucket("5odds");
+        const fiveData = await getPredictionsByBucket("value5");
         setFiveOddsPredictions(fiveData || []);
       } catch (err) { console.error("Failed to fetch 5odds predictions", err); }
       finally { setLoadingFiveOdds(false); }
@@ -169,7 +169,7 @@ export function HomePageClient() {
           title="Daily 2+ Odds" 
           predictions={twoOddsPredictions} 
           icon={Trophy} 
-          link="/predictions/2odds" 
+          link="/predictions/daily2" 
           isLoading={loadingTwoOdds} 
           emptyMessage="No 2+ odds predictions found for today."
         />
@@ -177,7 +177,7 @@ export function HomePageClient() {
           title="Value 5+ Odds" 
           predictions={fiveOddsPredictions} 
           icon={Gem} 
-          link="/predictions/5odds" 
+          link="/predictions/value5" 
           isLoading={loadingFiveOdds} 
           emptyMessage="No 5+ odds value picks available right now."
         />

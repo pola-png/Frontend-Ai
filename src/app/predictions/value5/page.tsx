@@ -7,7 +7,7 @@ import { Prediction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Gem } from 'lucide-react';
 
-export default function FiveOddsPredictionsPage() {
+export default function Value5OddsPredictionsPage() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,7 +15,7 @@ export default function FiveOddsPredictionsPage() {
     const fetchMatches = async () => {
       try {
         setIsLoading(true);
-        const data = await getPredictionsByBucket('5odds');
+        const data = await getPredictionsByBucket('value5');
         const sortedPredictions = (data || []).sort((a, b) => new Date(a.matchDateUtc).getTime() - new Date(b.matchDateUtc).getTime());
         setPredictions(sortedPredictions);
       } catch (error) {

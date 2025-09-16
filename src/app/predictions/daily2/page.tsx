@@ -7,7 +7,7 @@ import { Prediction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trophy } from 'lucide-react';
 
-export default function TwoOddsPredictionsPage() {
+export default function Daily2OddsPredictionsPage() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,7 +15,7 @@ export default function TwoOddsPredictionsPage() {
     const fetchMatches = async () => {
       try {
         setIsLoading(true);
-        const data = await getPredictionsByBucket('2odds');
+        const data = await getPredictionsByBucket('daily2');
         const sortedPredictions = (data || []).sort((a, b) => new Date(a.matchDateUtc).getTime() - new Date(b.matchDateUtc).getTime());
         setPredictions(sortedPredictions);
       } catch (error) {
