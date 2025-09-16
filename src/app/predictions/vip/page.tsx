@@ -9,7 +9,7 @@ export default function VipPredictionsPage() {
       bucket="vip"
       title="VIP Picks"
       icon={<Crown className="h-8 w-8 text-primary" />}
-      emptyMessage="No VIP predictions available at the moment."
+      emptyMessage="No VIP predictions available in the next 24 hours."
     />
   );
 }
