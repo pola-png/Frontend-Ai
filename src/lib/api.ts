@@ -1,239 +1,150 @@
 // src/lib/api.ts
-import axios from 'axios';
-import type { Match, Prediction, Team } from './types';
+import axios from "axios";
+import type { Match, Prediction } from "./types";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '',
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: process.env.NEXT_PUBLIC_API_URL, // should include /api if your backend requires it
+  headers: { "Content-Type": "application/json" },
 });
 
 /** Helpers **/
-function toDecimalOdds(prob?: number | null): number | null {
-  if (!prob || typeof prob !== 'number' || prob <= 0) return null;
-  const o = 1 / prob;
-  return parseFloat(o.toFixed(2));
-}
+const getPredictionDetailsFromOutcomes = (outcomes: any): { prediction: string; odds: number } => {
+  if (!outcomes) return { prediction: "N/A", odds: 1.0 };
 
-function safeId(obj: any) {
-  return obj?._id ?? obj?.id ?? null;
-}
-
-function normalizeTeam(raw: any): Team {
-  if (!raw) return { id: 'unknown', name: 'Unknown' };
-  return {
-    id: safeId(raw) || String(raw),
-    name: raw.name || raw.teamName || 'Unknown',
-    logoUrl: raw.logo || raw.logoUrl || raw.image || null,
-  };
-}
-
-/**
- * Choose primary prediction market from outcomes using priority:
- * doubleChance > over25 > over15 > over05 > btts > oneXTwo
- * and return readable text + decimal odds (1/probability)
- */
-function getPredictionDetailsFromOutcomes(outcomes: any) {
-  if (!outcomes || typeof outcomes !== 'object') {
-    return { prediction: 'N/A', odds: 1.0, market: 'unknown' };
-  }
-
-  // 1) doubleChance
+  // Prefer doubleChance / over / btts preferences depending on structure
+  // If doubleChance exists and is clearly > other values, use it as textual label
   if (outcomes.doubleChance) {
     const dc = outcomes.doubleChance;
-    const entries = Object.entries(dc); // [ ['homeOrDraw', 0.7], ... ]
-    const best = entries.reduce((acc, cur) => (cur[1] > acc[1] ? cur : acc), ['', -1]);
-    if (best[1] > 0) {
-      const labelMap: Record<string, string> = {
-        homeOrDraw: 'Home or Draw',
-        homeOrAway: 'Home or Away',
-        drawOrAway: 'Draw or Away',
-      };
-      const label = labelMap[best[0]] ?? best[0];
-      const odds = toDecimalOdds(best[1]) ?? 1.0;
-      return { prediction: `Double Chance: ${label}`, odds, market: 'doubleChance' };
-    }
+    // choose the largest DC value label
+    const pairs: Array<[string, number]> = [
+      ["Home or Draw", dc.homeOrDraw ?? 0],
+      ["Home or Away", dc.homeOrAway ?? 0],
+      ["Draw or Away", dc.drawOrAway ?? 0],
+    ];
+    pairs.sort((a, b) => b[1] - a[1]);
+    const max = pairs[0];
+    if (max[1] > 0) return { prediction: max[0], odds: Number((1 / max[1]).toFixed(2)) || max[1] };
   }
 
-  // 2) overs (choose the most confident overX among available)
-  const overs = ['over25', 'over15', 'over05'];
-  let bestOverKey = '';
-  let bestOverVal = -1;
-  for (const k of overs) {
-    if (typeof outcomes[k] === 'number' && outcomes[k] > bestOverVal) {
-      bestOverVal = outcomes[k];
-      bestOverKey = k;
-    }
-  }
-  if (bestOverVal > -1) {
-    const labelMap: Record<string, string> = {
-      over05: 'Over 0.5',
-      over15: 'Over 1.5',
-      over25: 'Over 2.5',
-    };
-    const odds = toDecimalOdds(bestOverVal) ?? 1.0;
-    return { prediction: labelMap[bestOverKey] ?? bestOverKey, odds, market: bestOverKey };
-  }
-
-  // 3) BTTS
-  if (typeof outcomes.bttsYes === 'number' || typeof outcomes.bttsNo === 'number') {
-    const yes = outcomes.bttsYes ?? 0;
-    const no = outcomes.bttsNo ?? 0;
-    if (yes >= no) {
-      return { prediction: 'Both Teams To Score - Yes', odds: toDecimalOdds(yes) ?? 1.0, market: 'bttsYes' };
-    } else {
-      return { prediction: 'Both Teams To Score - No', odds: toDecimalOdds(no) ?? 1.0, market: 'bttsNo' };
-    }
-  }
-
-  // 4) oneXTwo (fallback)
   if (outcomes.oneXTwo) {
     const { home = 0, draw = 0, away = 0 } = outcomes.oneXTwo;
     const max = Math.max(home, draw, away);
-    if (max <= 0) return { prediction: 'N/A', odds: 1.0, market: 'oneXTwo' };
-    if (max === home) return { prediction: 'Home Win', odds: toDecimalOdds(home) ?? 1.0, market: 'oneXTwo' };
-    if (max === away) return { prediction: 'Away Win', odds: toDecimalOdds(away) ?? 1.0, market: 'oneXTwo' };
-    return { prediction: 'Draw', odds: toDecimalOdds(draw) ?? 1.0, market: 'oneXTwo' };
+    if (max === home) return { prediction: "Home Win", odds: home };
+    if (max === away) return { prediction: "Away Win", odds: away };
+    return { prediction: "Draw", odds: draw };
   }
 
-  // 5) fallback: choose any numeric field as probability
-  const flatVals = Object.keys(outcomes).map(k => ({ k, v: outcomes[k] }))
-    .filter(e => typeof e.v === 'number')
-    .sort((a, b) => b.v - a.v);
-  if (flatVals.length > 0) {
-    return { prediction: String(flatVals[0].k), odds: toDecimalOdds(flatVals[0].v) ?? 1.0, market: flatVals[0].k };
-  }
+  // fallback to common overs or btts
+  if (outcomes.over25) return { prediction: "Over 2.5", odds: outcomes.over25 };
+  if (outcomes.bttsYes) return { prediction: "Both Teams To Score", odds: outcomes.bttsYes };
 
-  return { prediction: 'N/A', odds: 1.0, market: 'unknown' };
-}
+  return { prediction: "N/A", odds: 1.0 };
+};
 
-/** Normalizers **/
-export const normalizePrediction = (rawPrediction: any): Prediction | null => {
+const normalizePrediction = (rawPrediction: any): Prediction | null => {
   if (!rawPrediction) return null;
 
-  // ID
-  const id = rawPrediction._id ?? rawPrediction.id ?? `${rawPrediction.matchId ?? 'm'}-${rawPrediction.bucket ?? 'b'}-${Math.random().toString(36).slice(2,7)}`;
+  // The match data might be nested in matchId or be the root object
+  const matchData = rawPrediction.matchId && typeof rawPrediction.matchId === "object" ? rawPrediction.matchId : rawPrediction;
+  if (!matchData || !matchData.homeTeam || !matchData.awayTeam) return null;
 
-  // If match context is nested in matchId or provided separately
-  const matchData = (rawPrediction.matchId && typeof rawPrediction.matchId === 'object')
-    ? rawPrediction.matchId
-    : (rawPrediction.match || rawPrediction.matchContext || null);
-
-  // Derive teams either from direct prediction payload (if provided) or from matchData
-  const homeRaw = rawPrediction.homeTeam ?? matchData?.homeTeam;
-  const awayRaw = rawPrediction.awayTeam ?? matchData?.awayTeam;
-
-  if (!homeRaw || !awayRaw) {
-    // prediction without team info; skip
-    return null;
-  }
-
-  const homeTeam = normalizeTeam(homeRaw);
-  const awayTeam = normalizeTeam(awayRaw);
-
-  // Compute textual prediction + odds from outcomes
-  const outcomes = rawPrediction.outcomes ?? rawPrediction;
-  const marketResult = getPredictionDetailsFromOutcomes(outcomes);
-
-  const predictionText = rawPrediction.prediction ?? marketResult.prediction;
-  const odds = rawPrediction.odds ?? marketResult.odds ?? 1.0;
-
-  const matchId = safeId(matchData) ?? rawPrediction.matchId ?? null;
-  const matchDateUtc = matchData?.matchDateUtc ?? matchData?.date ?? rawPrediction.matchDateUtc ?? rawPrediction.date ?? null;
-  const league = matchData?.league ?? matchData?.competition ?? rawPrediction.league ?? 'Unknown League';
+  const outcomes = rawPrediction.outcomes || rawPrediction.outcomes?.oneXTwo ? rawPrediction.outcomes : rawPrediction.outcomes;
+  const details = getPredictionDetailsFromOutcomes(rawPrediction.outcomes ?? {});
 
   return {
-    id,
-    matchId,
-    prediction: predictionText,
-    odds: typeof odds === 'number' ? odds : parseFloat(String(odds)) || 1.0,
-    confidence: rawPrediction.confidence ?? rawPrediction.confidencePct ?? null,
-    bucket: rawPrediction.bucket ?? 'unknown',
-    status: rawPrediction.status ?? 'pending',
-    is_vip: !!rawPrediction.is_vip || rawPrediction.bucket === 'vip',
-    analysis: rawPrediction.analysis ?? rawPrediction.notes ?? null,
-    outcomes: outcomes,
-    homeTeam,
-    awayTeam,
-    league,
-    matchDateUtc,
-  };
+    id: rawPrediction._id || rawPrediction.id || `${matchData._id}-${rawPrediction.bucket}`,
+    matchId: matchData._id || matchData.id,
+    prediction: rawPrediction.prediction || details.prediction,
+    odds: typeof rawPrediction.odds === "number" ? rawPrediction.odds : details.odds,
+    confidence: rawPrediction.confidence,
+    bucket: rawPrediction.bucket || rawPrediction.type || "unknown",
+    status: rawPrediction.status || "pending",
+    is_vip: !!rawPrediction.is_vip,
+    analysis: rawPrediction.analysis,
+    outcomes: rawPrediction.outcomes || rawPrediction.outcomeData || null,
+
+    // flattened match context
+    homeTeam: matchData.homeTeam,
+    awayTeam: matchData.awayTeam,
+    league: matchData.league || matchData.competition || "Unknown League",
+    matchDateUtc: matchData.matchDateUtc || matchData.date || matchData.datetime,
+  } as Prediction;
 };
 
-export const normalizeMatch = (rawMatch: any): Match | null => {
+const normalizeMatch = (rawMatch: any): Match | null => {
   if (!rawMatch) return null;
+  // Ensure id consistency
+  const id = rawMatch._id || rawMatch.id;
 
-  const id = rawMatch._id ?? rawMatch.id ?? String(Math.random().toString(36).slice(2,9));
-  const homeTeam = normalizeTeam(rawMatch.homeTeam);
-  const awayTeam = normalizeTeam(rawMatch.awayTeam);
-  const matchDateUtc = rawMatch.matchDateUtc ?? rawMatch.date ?? null;
-  const league = rawMatch.league ?? rawMatch.competition ?? 'Unknown League';
+  // normalize nested predictions if any
+  const nestedPredictions = (rawMatch.predictions || [])
+    .map(normalizePrediction)
+    .filter((p): p is Prediction => p !== null);
 
-  // Normalize nested predictions (if any)
-  const rawPredictions = rawMatch.predictions ?? [];
-  const predictions = rawPredictions
-    .map((p: any) => normalizePrediction({ ...p, matchId: { _id: id, homeTeam: rawMatch.homeTeam, awayTeam: rawMatch.awayTeam, league, matchDateUtc } }))
-    .filter((p: any) => p !== null);
-
-  // Top-level single prediction (some result endpoints use `prediction` on the match root)
+  // If there's top-level `prediction` object (some results endpoints)
   let topLevelPrediction = null;
   if (rawMatch.prediction) {
-    topLevelPrediction = normalizePrediction({ ...rawMatch.prediction, matchId: { _id: id, homeTeam: rawMatch.homeTeam, awayTeam: rawMatch.awayTeam, league, matchDateUtc }});
+    topLevelPrediction = normalizePrediction({ ...rawMatch.prediction, matchId: rawMatch });
   }
 
   return {
     id,
-    league,
-    matchDateUtc,
-    status: rawMatch.status ?? rawMatch.matchStatus ?? 'scheduled',
-    homeTeam,
-    awayTeam,
-    scores: rawMatch.scores ?? rawMatch.score ?? null,
-    predictions,
-    prediction: topLevelPrediction ?? undefined,
-    outcome: rawMatch.outcome ?? undefined,
-  };
+    league: rawMatch.league || rawMatch.competition || "Unknown League",
+    matchDateUtc: rawMatch.matchDateUtc || rawMatch.date || rawMatch.datetime,
+    status: rawMatch.status || rawMatch.matchStatus || "scheduled",
+    homeTeam: rawMatch.homeTeam,
+    awayTeam: rawMatch.awayTeam,
+    scores: rawMatch.score || rawMatch.scores || null,
+    predictions: topLevelPrediction ? [topLevelPrediction, ...nestedPredictions] : nestedPredictions,
+    prediction: topLevelPrediction || undefined,
+    outcome: rawMatch.outcome || undefined,
+  } as Match;
 };
 
-/** API call wrappers **/
+/** API functions **/
 
-export const getPredictionsByBucket = async (bucket: string): Promise<any[]> => {
+export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[]> => {
   try {
     const res = await api.get(`/predictions/${bucket}`);
-    const data = res.data ?? [];
+    // API returns groups per-match (array of arrays) or a flat list; handle both.
+    const body = res.data ?? [];
+    let list: any[] = [];
+    if (Array.isArray(body)) {
+      if (body.length > 0 && Array.isArray(body[0])) {
+        // [[p1,p2],[p3]] -> flatten
+        list = body.flat();
+      } else {
+        list = body;
+      }
+    } else if (typeof body === "object") {
+      list = [body];
+    }
 
-    // If backend returned grouped arrays (arrays of arrays), flatten them to a single flat array
-    const isGrouped = Array.isArray(data) && data.length > 0 && Array.isArray(data[0]);
-    const flat = isGrouped ? (data as any[]).flat() : (data as any[]);
-
-    const normalized: any[] = flat
-      .map(normalizePrediction)
-      .filter((p): p is any => p !== null);
-
-    return normalized;
+    return list.map(normalizePrediction).filter((p): p is Prediction => p !== null);
   } catch (err) {
-    console.error('API: getPredictionsByBucket failed', err);
+    console.error("getPredictionsByBucket error:", err);
     return [];
   }
 };
 
 export const getResults = async (): Promise<Match[]> => {
   try {
-    const res = await api.get('/results');
-    const raw: any[] = res.data ?? [];
-    return raw.map(normalizeMatch).filter((m): m is Match => m !== null);
+    const res = await api.get("/results");
+    const body = res.data ?? [];
+    return (Array.isArray(body) ? body : [body]).map(normalizeMatch).filter((m): m is Match => m !== null);
   } catch (err) {
-    console.error('API: getResults failed', err);
+    console.error("getResults error:", err);
     return [];
   }
 };
 
 export const getUpcomingMatches = async (): Promise<Match[]> => {
   try {
-    const res = await api.get('/matches/upcoming');
-    const raw: any[] = res.data ?? [];
-    return raw.map(normalizeMatch).filter((m): m is Match => m !== null);
+    const res = await api.get("/matches/upcoming");
+    const body = res.data ?? [];
+    return (Array.isArray(body) ? body : [body]).map(normalizeMatch).filter((m): m is Match => m !== null);
   } catch (err) {
-    console.error('API: getUpcomingMatches failed', err);
+    console.error("getUpcomingMatches error:", err);
     return [];
   }
 };
@@ -243,7 +154,7 @@ export const getMatchSummary = async (matchId: string): Promise<Match | null> =>
     const res = await api.get(`/summary/${matchId}`);
     return normalizeMatch(res.data);
   } catch (err) {
-    console.error(`API: getMatchSummary failed for ${matchId}`, err);
+    console.error("getMatchSummary error:", err);
     return null;
   }
 };
