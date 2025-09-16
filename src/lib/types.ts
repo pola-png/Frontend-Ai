@@ -31,19 +31,19 @@ export interface Outcomes {
 
 // This interface represents a "normalized" prediction object,
 // where match details are flattened for easier UI consumption.
-// This is primarily for the /predictions/:bucket endpoints.
+// This is the primary data structure the UI components will use.
 export interface Prediction {
   _id: string;
-  matchId: string; 
-  prediction?: string; 
+  matchId: string;
+  prediction: string; // e.g., "Home Win", "Draw", "Over 2.5"
   outcomes?: Outcomes;
-  odds?: number;
+  odds: number;
   confidence?: number;
   bucket: '2odds' | '5odds' | 'big10' | 'vip' | string;
   status: 'pending' | 'won' | 'lost';
   is_vip?: boolean;
   analysis?: string;
-  
+
   // --- Flattened properties from Match for UI convenience ---
   homeTeam: Team;
   awayTeam: Team;
@@ -59,8 +59,8 @@ export interface Match {
   league?: string;
   matchDateUtc: string;
   status: 'scheduled' | 'upcoming' | 'tba' | 'finished';
-  homeTeam: Team | string;
-  awayTeam: Team | string;
+  homeTeam: Team;
+  awayTeam: Team;
   scores?: {
     home: number;
     away: number;
@@ -68,6 +68,6 @@ export interface Match {
   // A match can have multiple predictions from different buckets
   predictions?: Prediction[];
   // For the results page, a single relevant prediction might be attached
-  prediction?: Prediction; 
+  prediction?: Prediction;
   outcome?: 'won' | 'lost';
 }
