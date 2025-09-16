@@ -15,30 +15,38 @@ export default function ResultsPage() {
       try {
         setIsLoading(true);
         const data = await getResults();
-        setResults(
-          (data || []).sort(
-            (a, b) => new Date(b.matchDateUtc).getTime() - new Date(a.matchDateUtc).getTime()
-          )
+
+        // Sort descending by date (latest first)
+        const sortedResults = (data || []).sort(
+          (a, b) => new Date(b.date || b.matchDateUtc).getTime() - new Date(a.date || a.matchDateUtc).getTime()
         );
+
+        setResults(sortedResults);
       } catch (error) {
         console.error('Failed to fetch results:', error);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchResults();
   }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold tracking-tight mb-8">Latest Results</h1>
+
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-56 w-full" />)}
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-56 w-full" />
+          ))}
         </div>
       ) : results.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {results.map(result => <ResultCard key={result.id} match={result} />)}
+          {results.map((result) => (
+            <ResultCard key={result.id} match={result} />
+          ))}
         </div>
       ) : (
         <div className="flex justify-center items-center h-64">
