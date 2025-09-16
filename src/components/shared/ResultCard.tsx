@@ -14,8 +14,8 @@ type ResultCardProps = {
 export function ResultCard({ match }: ResultCardProps) {
   const { homeTeam, awayTeam, league, matchDateUtc, scores, prediction, outcome } = match;
 
-  const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : homeTeam;
-  const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : awayTeam;
+  const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : 'Home';
+  const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
   const homeTeamLogo = typeof homeTeam === 'object' ? homeTeam.logoUrl : undefined;
   const awayTeamLogo = typeof awayTeam === 'object' ? awayTeam.logoUrl : undefined;
 

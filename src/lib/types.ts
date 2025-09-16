@@ -1,48 +1,26 @@
+// This file contains the TypeScript interfaces for the "clean" data
+// structures that the frontend UI components will consume. The functions
+// in `api.ts` are responsible for transforming the raw backend response
+// into these shapes.
+
 export interface Team {
   _id: string;
   name: string;
   logoUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
-export interface OneXTwo {
-  home: number;
-  draw: number;
-  away: number;
-}
-
-export interface DoubleChance {
-  homeOrDraw: number;
-  homeOrAway: number;
-  drawOrAway: number;
-}
-
-export interface Outcomes {
-  oneXTwo: OneXTwo;
-  doubleChance?: DoubleChance;
-  over05?: number;
-  over15?: number;
-  over25?: number;
-  bttsYes?: number;
-  bttsNo?: number;
-  [k: string]: any;
-}
-
-// This interface represents a "normalized" prediction object,
-// where match details are flattened for easier UI consumption.
-// This is the primary data structure the UI components will use.
+// Represents a fully normalized prediction object, ready for the UI.
 export interface Prediction {
   _id: string;
   matchId: string;
-  prediction: string; // e.g., "Home Win", "Draw", "Over 2.5"
-  outcomes?: Outcomes;
-  odds: number;
+  prediction: string; // "Home Win", "Draw", "Away Win", etc.
+  odds: number;       // The odds for that prediction
   confidence?: number;
   bucket: '2odds' | '5odds' | 'big10' | 'vip' | string;
   status: 'pending' | 'won' | 'lost';
   is_vip?: boolean;
   analysis?: string;
+  outcomes?: any; // Keep original outcomes for detailed views
 
   // --- Flattened properties from Match for UI convenience ---
   homeTeam: Team;
@@ -51,11 +29,9 @@ export interface Prediction {
   matchDateUtc: string;
 }
 
-// This interface represents a match, which can contain its own predictions.
-// This is primarily for the /matches/upcoming and /results endpoints.
+// Represents a fully normalized match object, ready for the UI.
 export interface Match {
   _id: string;
-  fixture?: string;
   league?: string;
   matchDateUtc: string;
   status: 'scheduled' | 'upcoming' | 'tba' | 'finished';
@@ -65,7 +41,7 @@ export interface Match {
     home: number;
     away: number;
   };
-  // A match can have multiple predictions from different buckets
+  // A match can have multiple predictions from different buckets, now normalized
   predictions?: Prediction[];
   // For the results page, a single relevant prediction might be attached
   prediction?: Prediction;
