@@ -1,3 +1,4 @@
+// src/app/predictions/value5/page.tsx
 'use client';
 
 import PredictionsPageTemplate from '../PredictionsPageTemplate';
@@ -9,7 +10,7 @@ export default function Value5OddsPredictionsPage() {
       bucket="value5"
       title="Value 5+ Odds"
       icon={<Gem className="h-8 w-8 text-primary" />}
-      emptyMessage="No 5+ odds predictions available in the next 24 hours."
+      emptyMessage="No 5+ value picks in the next 24 hours."
     />
   );
 }
