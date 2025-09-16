@@ -1,28 +1,27 @@
+import { useState } from 'react';
 import { Prediction } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
-import { Flame, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Flame, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { GenerateExplanationDialog } from './GenerateExplanationDialog';
 import Image from 'next/image';
 
 const StatusIcon = ({ status }: { status?: Prediction['status'] }) => {
   switch (status) {
-    case 'won':
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    case 'lost':
-      return <XCircle className="h-5 w-5 text-red-500" />;
-    default:
-      return <Clock className="h-5 w-5 text-gray-500" />;
+    case 'won': return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+    case 'lost': return <XCircle className="h-5 w-5 text-red-500" />;
+    default: return <Clock className="h-5 w-5 text-gray-500" />;
   }
 };
 
 export function PredictionCard({ prediction }: { prediction: Prediction }) {
+  const [expanded, setExpanded] = useState(false);
+
   if (!prediction) return null;
 
-  const { league, matchDateUtc, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
-  
+  const { league, matchDateUtc, prediction: predText, odds, status, is_vip, homeTeam, awayTeam, confidence } = prediction;
   const homeTeamName = homeTeam?.name || 'Home';
   const awayTeamName = awayTeam?.name || 'Away';
   const homeTeamLogo = homeTeam?.logoUrl;
@@ -39,7 +38,8 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
           {matchDateUtc ? format(new Date(matchDateUtc), 'MMM d, yyyy - HH:mm') : 'Date TBD'}
         </p>
       </CardHeader>
-      <CardContent className="flex-1 space-y-4 pt-4">
+
+      <CardContent className="flex-1 space-y-2">
         <div className="flex items-center justify-around text-center">
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
@@ -55,11 +55,28 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
             <span className="font-medium text-sm break-words">{awayTeamName}</span>
           </div>
         </div>
+
         <div className="text-center pt-2">
           <p className="text-sm text-muted-foreground">Prediction</p>
           <p className="font-bold text-primary text-lg">{predText || '-'}</p>
+          {confidence && <p className="text-xs text-muted-foreground">{confidence}% confidence</p>}
         </div>
+
+        {expanded && (
+          <div className="pt-2 text-left text-sm space-y-1">
+            {/* Expandable details placeholder */}
+            <p>Detailed stats and analysis...</p>
+          </div>
+        )}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1 text-xs text-primary font-medium mt-1 mx-auto"
+        >
+          {expanded ? 'Hide Details' : 'Show Details'}
+          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
       </CardContent>
+
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
         <div className="flex items-center gap-2">
           <Flame className="h-5 w-5 text-accent" />
