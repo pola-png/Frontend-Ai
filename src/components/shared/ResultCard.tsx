@@ -1,8 +1,13 @@
-import { Match } from '@/lib/types';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+// src/components/shared/ResultCard.tsx
+'use client';
+
+import type { Match } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
+import { Badge } from '../ui/badge';
+import { cn } from '@/lib/utils';
+import { Calendar, ShieldCheck, XCircle } from 'lucide-react';
 import Image from 'next/image';
 
 type ResultCardProps = {
@@ -10,66 +15,65 @@ type ResultCardProps = {
 };
 
 export function ResultCard({ match }: ResultCardProps) {
-  if (!match) return null;
+  const { homeTeam, awayTeam, league, matchDateUtc, scores, prediction, outcome } = match;
 
-  const {
-    league,
-    matchDateUtc,
-    homeTeam,
-    awayTeam,
-    scores,
-    prediction,
-    outcome,
-  } = match;
-
-  const homeTeamName = homeTeam?.name || 'Home';
-  const awayTeamName = awayTeam?.name || 'Away';
-  const homeTeamLogo = homeTeam?.logoUrl;
-  const awayTeamLogo = awayTeam?.logoUrl;
-
-  const displayOdds = prediction?.odds && prediction.odds > 1 ? prediction.odds.toFixed(2) : null;
+  const homeTeamName = typeof homeTeam === 'object' ? homeTeam.name : 'Home';
+  const awayTeamName = typeof awayTeam === 'object' ? awayTeam.name : 'Away';
+  const homeTeamLogo = typeof homeTeam === 'object' ? homeTeam.logoUrl : undefined;
+  const awayTeamLogo = typeof awayTeam === 'object' ? awayTeam.logoUrl : undefined;
 
   return (
-    <Card className="flex flex-col bg-card shadow-md hover:shadow-lg border-border/20">
+    <Card className="flex flex-col h-full bg-card shadow-md hover:shadow-xl transition-shadow duration-300 border-border/20">
       <CardHeader>
-        <CardTitle className="text-base font-medium truncate">{league || 'League'}</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {matchDateUtc ? format(new Date(matchDateUtc), 'MMM d, yyyy - HH:mm') : 'Date TBD'}
-        </p>
+        <CardTitle className="text-base font-medium text-muted-foreground truncate">{league}</CardTitle>
       </CardHeader>
-
-      <CardContent className="flex justify-around items-center py-4">
-        <div className="flex flex-col items-center gap-2 w-2/5">
-          <Avatar>
-            {homeTeamLogo ? <Image src={homeTeamLogo} alt={homeTeamName} width={40} height={40} /> : <AvatarFallback>{homeTeamName.charAt(0)}</AvatarFallback>}
-          </Avatar>
-          <span className="text-sm font-medium text-center">{homeTeamName}</span>
-          {scores && <span className="text-lg font-bold">{scores.home}</span>}
-        </div>
-
-        <span className="text-lg font-bold text-muted-foreground">-</span>
-
-        <div className="flex flex-col items-center gap-2 w-2/5">
-          <Avatar>
-            {awayTeamLogo ? <Image src={awayTeamLogo} alt={awayTeamName} width={40} height={40} /> : <AvatarFallback>{awayTeamName.charAt(0)}</AvatarFallback>}
-          </Avatar>
-          <span className="text-sm font-medium text-center">{awayTeamName}</span>
-          {scores && <span className="text-lg font-bold">{scores.away}</span>}
-        </div>
-      </CardContent>
-
-      {prediction && (
-        <CardFooter className="flex justify-between items-center bg-muted/50 px-4 py-2">
-          <div>
-            <p className="text-sm text-muted-foreground">Prediction</p>
-            <p className="font-bold text-primary">{prediction.prediction}</p>
-            {displayOdds && <p className="text-sm">Odds: <span className="font-semibold">{displayOdds}</span></p>}
+      <CardContent className="flex-1 flex flex-col justify-center items-center space-y-4">
+        <div className="flex w-full items-center justify-between text-center">
+          <div className="flex flex-col items-center gap-2 w-2/5">
+            <Avatar>
+              {homeTeamLogo ? <Image src={homeTeamLogo} alt={homeTeamName} width={40} height={40} /> : <AvatarFallback>{homeTeamName?.charAt(0).toUpperCase() || 'H'}</AvatarFallback>}
+            </Avatar>
+            <span className="font-semibold text-sm text-center break-words">{homeTeamName}</span>
           </div>
-          <Badge variant={outcome === 'won' ? 'success' : outcome === 'lost' ? 'destructive' : 'outline'}>
-            {outcome || 'Pending'}
-          </Badge>
-        </CardFooter>
-      )}
+          <div className="w-1/5">
+            {scores ? (
+              <span className="text-2xl font-bold">{scores.home} - {scores.away}</span>
+            ) : (
+              <span className="text-xl font-bold text-muted-foreground">vs</span>
+            )}
+          </div>
+          <div className="flex flex-col items-center gap-2 w-2/5">
+            <Avatar>
+              {awayTeamLogo ? <Image src={awayTeamLogo} alt={awayTeamName} width={40} height={40} /> : <AvatarFallback>{awayTeamName?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>}
+            </Avatar>
+            <span className="font-semibold text-sm text-center break-words">{awayTeamName}</span>
+          </div>
+        </div>
+
+        {prediction?.prediction && (
+          <div className="text-center pt-2">
+            <p className="text-xs text-muted-foreground">Prediction: {prediction.prediction}</p>
+            {outcome && (
+              <Badge
+                variant={outcome === 'won' ? 'default' : 'destructive'}
+                className={cn(
+                  'mt-1',
+                  outcome === 'won' ? 'bg-green-500/20 text-green-700 border-green-500/30' : 'bg-red-500/20 text-red-700 border-red-500/30'
+                )}
+              >
+                {outcome === 'won' ? <ShieldCheck className="mr-1 h-3 w-3" /> : <XCircle className="mr-1 h-3 w-3" />}
+                {outcome.charAt(0).toUpperCase() + outcome.slice(1)}
+              </Badge>
+            )}
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="bg-muted/50 p-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span>{matchDateUtc ? format(new Date(matchDateUtc), 'EEE, MMM d, yyyy - HH:mm') : 'Date TBD'}</span>
+        </div>
+      </CardFooter>
     </Card>
   );
-}
+                  }
