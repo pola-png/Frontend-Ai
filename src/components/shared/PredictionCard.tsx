@@ -7,23 +7,19 @@ import { Flame, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { GenerateExplanationDialog } from './GenerateExplanationDialog';
 import Image from 'next/image';
 
-const StatusIcon = ({ status }: { status: Prediction['status'] }) => {
-  if (!status) return <Clock className="h-5 w-5 text-gray-500" />;
+const StatusIcon = ({ status }: { status?: Prediction['status'] }) => {
   switch (status) {
     case 'won':
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     case 'lost':
       return <XCircle className="h-5 w-5 text-red-500" />;
-    case 'pending':
     default:
       return <Clock className="h-5 w-5 text-gray-500" />;
   }
 };
 
 export function PredictionCard({ prediction }: { prediction: Prediction }) {
-  if (!prediction || !prediction.homeTeam || !prediction.awayTeam) {
-    return null;
-  }
+  if (!prediction) return null;
 
   const { league, matchDateUtc, prediction: predText, odds, status, is_vip, homeTeam, awayTeam } = prediction;
   
@@ -54,7 +50,7 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
           <span className="text-2xl font-bold text-muted-foreground">vs</span>
           <div className="flex flex-col items-center gap-2 w-2/5">
             <Avatar>
-             {awayTeamLogo ? <Image src={awayTeamLogo} alt={awayTeamName} width={40} height={40} /> : <AvatarFallback>{awayTeamName.charAt(0).toUpperCase()}</AvatarFallback>}
+              {awayTeamLogo ? <Image src={awayTeamLogo} alt={awayTeamName} width={40} height={40} /> : <AvatarFallback>{awayTeamName.charAt(0).toUpperCase()}</AvatarFallback>}
             </Avatar>
             <span className="font-medium text-sm break-words">{awayTeamName}</span>
           </div>
@@ -66,9 +62,9 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
         <div className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-accent" />
-            <span className="font-bold text-lg">{odds ? odds.toFixed(2) : '-.--'}</span>
-            <span className="text-sm text-muted-foreground">Odds</span>
+          <Flame className="h-5 w-5 text-accent" />
+          <span className="font-bold text-lg">{odds ? odds.toFixed(2) : '-.--'}</span>
+          <span className="text-sm text-muted-foreground">Odds</span>
         </div>
         <div className="flex items-center gap-2">
           <GenerateExplanationDialog prediction={prediction} />
