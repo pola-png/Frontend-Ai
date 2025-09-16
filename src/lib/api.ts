@@ -1,183 +1,217 @@
+// src/lib/api.ts
 import axios from 'axios';
 import type { Match, Prediction, Team } from './types';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '',
   headers: { 'Content-Type': 'application/json' },
 });
 
-/**
- * Convert a probability (0..1) to a consumer-friendly decimal odd.
- * If probability is zero-ish, return null to indicate invalid market.
- * We clamp to reasonable bounds to avoid absurd values.
- */
-function probToDecimal(prob?: number | null): number | null {
+/** Helpers **/
+function toDecimalOdds(prob?: number | null): number | null {
   if (!prob || typeof prob !== 'number' || prob <= 0) return null;
-  // decimal odds = 1 / prob
-  const odd = 1 / prob;
-  // clamp to max 100 and min 1.01 (to avoid Infinity)
-  const clamped = Math.min(Math.max(odd, 1.01), 100);
-  return Math.round(clamped * 100) / 100;
+  const o = 1 / prob;
+  return parseFloat(o.toFixed(2));
+}
+
+function safeId(obj: any) {
+  return obj?._id ?? obj?.id ?? null;
+}
+
+function normalizeTeam(raw: any): Team {
+  if (!raw) return { id: 'unknown', name: 'Unknown' };
+  return {
+    id: safeId(raw) || String(raw),
+    name: raw.name || raw.teamName || 'Unknown',
+    logoUrl: raw.logo || raw.logoUrl || raw.image || null,
+  };
 }
 
 /**
- * Choose a preferred market from a prediction's outcomes.
- * Priority (frontend preference): doubleChance (if strong) -> over15/over25/over05 -> btts -> oneXTwo fallback
- * Returns chosen market key, market description, market probability (0..1), and decimal odds.
+ * Choose primary prediction market from outcomes using priority:
+ * doubleChance > over25 > over15 > over05 > btts > oneXTwo
+ * and return readable text + decimal odds (1/probability)
  */
-function choosePreferredMarket(outcomes: any) {
-  if (!outcomes) return null;
+function getPredictionDetailsFromOutcomes(outcomes: any) {
+  if (!outcomes || typeof outcomes !== 'object') {
+    return { prediction: 'N/A', odds: 1.0, market: 'unknown' };
+  }
 
-  // Double chance: prefer any doubleChance option with reasonably high probability
+  // 1) doubleChance
   if (outcomes.doubleChance) {
     const dc = outcomes.doubleChance;
-    // find the largest doubleChance probability and its label
-    const dcEntries = [
-      { key: 'homeOrDraw', label: 'Double Chance (Home or Draw)', prob: dc.homeOrDraw },
-      { key: 'homeOrAway', label: 'Double Chance (Home or Away)', prob: dc.homeOrAway },
-      { key: 'drawOrAway', label: 'Double Chance (Draw or Away)', prob: dc.drawOrAway },
-    ].filter(e => typeof e.prob === 'number');
-
-    if (dcEntries.length) {
-      dcEntries.sort((a, b) => (b.prob - a.prob));
-      const best = dcEntries[0];
-      // prefer double chance when probability >= 0.6 (tuneable)
-      if (best.prob >= 0.55) {
-        const odds = probToDecimal(best.prob);
-        if (odds) return { marketKey: best.key, marketLabel: best.label, marketProb: best.prob, odds };
-      }
+    const entries = Object.entries(dc); // [ ['homeOrDraw', 0.7], ... ]
+    const best = entries.reduce((acc, cur) => (cur[1] > acc[1] ? cur : acc), ['', -1]);
+    if (best[1] > 0) {
+      const labelMap: Record<string, string> = {
+        homeOrDraw: 'Home or Draw',
+        homeOrAway: 'Home or Away',
+        drawOrAway: 'Draw or Away',
+      };
+      const label = labelMap[best[0]] ?? best[0];
+      const odds = toDecimalOdds(best[1]) ?? 1.0;
+      return { prediction: `Double Chance: ${label}`, odds, market: 'doubleChance' };
     }
   }
 
-  // Over markets: check over25, over15, over05 in that order
-  const overPriority = [
-    { key: 'over25', label: 'Over 2.5 Goals', prob: outcomes?.over25 },
-    { key: 'over15', label: 'Over 1.5 Goals', prob: outcomes?.over15 },
-    { key: 'over05', label: 'Over 0.5 Goals', prob: outcomes?.over05 },
-  ];
-  for (const o of overPriority) {
-    if (typeof o.prob === 'number' && o.prob >= 0.6) {
-      const odds = probToDecimal(o.prob);
-      if (odds) return { marketKey: o.key, marketLabel: o.label, marketProb: o.prob, odds };
+  // 2) overs (choose the most confident overX among available)
+  const overs = ['over25', 'over15', 'over05'];
+  let bestOverKey = '';
+  let bestOverVal = -1;
+  for (const k of overs) {
+    if (typeof outcomes[k] === 'number' && outcomes[k] > bestOverVal) {
+      bestOverVal = outcomes[k];
+      bestOverKey = k;
+    }
+  }
+  if (bestOverVal > -1) {
+    const labelMap: Record<string, string> = {
+      over05: 'Over 0.5',
+      over15: 'Over 1.5',
+      over25: 'Over 2.5',
+    };
+    const odds = toDecimalOdds(bestOverVal) ?? 1.0;
+    return { prediction: labelMap[bestOverKey] ?? bestOverKey, odds, market: bestOverKey };
+  }
+
+  // 3) BTTS
+  if (typeof outcomes.bttsYes === 'number' || typeof outcomes.bttsNo === 'number') {
+    const yes = outcomes.bttsYes ?? 0;
+    const no = outcomes.bttsNo ?? 0;
+    if (yes >= no) {
+      return { prediction: 'Both Teams To Score - Yes', odds: toDecimalOdds(yes) ?? 1.0, market: 'bttsYes' };
+    } else {
+      return { prediction: 'Both Teams To Score - No', odds: toDecimalOdds(no) ?? 1.0, market: 'bttsNo' };
     }
   }
 
-  // BTTS
-  if (typeof outcomes?.bttsYes === 'number' && outcomes.bttsYes >= 0.6) {
-    const odds = probToDecimal(outcomes.bttsYes);
-    if (odds) return { marketKey: 'bttsYes', marketLabel: 'Both Teams to Score (Yes)', marketProb: outcomes.bttsYes, odds };
+  // 4) oneXTwo (fallback)
+  if (outcomes.oneXTwo) {
+    const { home = 0, draw = 0, away = 0 } = outcomes.oneXTwo;
+    const max = Math.max(home, draw, away);
+    if (max <= 0) return { prediction: 'N/A', odds: 1.0, market: 'oneXTwo' };
+    if (max === home) return { prediction: 'Home Win', odds: toDecimalOdds(home) ?? 1.0, market: 'oneXTwo' };
+    if (max === away) return { prediction: 'Away Win', odds: toDecimalOdds(away) ?? 1.0, market: 'oneXTwo' };
+    return { prediction: 'Draw', odds: toDecimalOdds(draw) ?? 1.0, market: 'oneXTwo' };
   }
 
-  // Fallback to oneXTwo maximum
-  if (outcomes?.oneXTwo) {
-    const { home, draw, away } = outcomes.oneXTwo;
-    if (typeof home === 'number' && typeof draw === 'number' && typeof away === 'number') {
-      const max = Math.max(home, draw, away);
-      let label = 'Draw';
-      let prob = draw;
-      if (max === home) { label = 'Home Win'; prob = home; }
-      else if (max === away) { label = 'Away Win'; prob = away; }
-      const odds = probToDecimal(prob);
-      if (odds) return { marketKey: 'oneXTwo', marketLabel: label, marketProb: prob, odds };
-    }
+  // 5) fallback: choose any numeric field as probability
+  const flatVals = Object.keys(outcomes).map(k => ({ k, v: outcomes[k] }))
+    .filter(e => typeof e.v === 'number')
+    .sort((a, b) => b.v - a.v);
+  if (flatVals.length > 0) {
+    return { prediction: String(flatVals[0].k), odds: toDecimalOdds(flatVals[0].v) ?? 1.0, market: flatVals[0].k };
   }
 
-  // If nothing, return null
-  return null;
+  return { prediction: 'N/A', odds: 1.0, market: 'unknown' };
 }
 
-/**
- * Normalize a raw prediction object from the API to frontend-friendly shape.
- * Will flatten match info (matchId) when present.
- */
-const normalizePrediction = (rawPrediction: any): Prediction | null => {
+/** Normalizers **/
+export const normalizePrediction = (rawPrediction: any): Prediction | null => {
   if (!rawPrediction) return null;
 
-  // match context may be nested in matchId (for predictions endpoints) or at root (for results)
-  const matchData = rawPrediction.matchId && typeof rawPrediction.matchId === 'object' ? rawPrediction.matchId : rawPrediction;
+  // ID
+  const id = rawPrediction._id ?? rawPrediction.id ?? `${rawPrediction.matchId ?? 'm'}-${rawPrediction.bucket ?? 'b'}-${Math.random().toString(36).slice(2,7)}`;
 
-  if (!matchData || !matchData.homeTeam || !matchData.awayTeam) {
-    // invalid, skip
+  // If match context is nested in matchId or provided separately
+  const matchData = (rawPrediction.matchId && typeof rawPrediction.matchId === 'object')
+    ? rawPrediction.matchId
+    : (rawPrediction.match || rawPrediction.matchContext || null);
+
+  // Derive teams either from direct prediction payload (if provided) or from matchData
+  const homeRaw = rawPrediction.homeTeam ?? matchData?.homeTeam;
+  const awayRaw = rawPrediction.awayTeam ?? matchData?.awayTeam;
+
+  if (!homeRaw || !awayRaw) {
+    // prediction without team info; skip
     return null;
   }
 
-  const chosen = choosePreferredMarket(rawPrediction.outcomes);
-  // if API provided a top-level `prediction` string, keep as user-friendly label,
-  // but we still prefer our chosen market label to compute odds and show market choice.
-  const predText = rawPrediction.prediction || (chosen ? chosen.marketLabel : undefined);
+  const homeTeam = normalizeTeam(homeRaw);
+  const awayTeam = normalizeTeam(awayRaw);
+
+  // Compute textual prediction + odds from outcomes
+  const outcomes = rawPrediction.outcomes ?? rawPrediction;
+  const marketResult = getPredictionDetailsFromOutcomes(outcomes);
+
+  const predictionText = rawPrediction.prediction ?? marketResult.prediction;
+  const odds = rawPrediction.odds ?? marketResult.odds ?? 1.0;
+
+  const matchId = safeId(matchData) ?? rawPrediction.matchId ?? null;
+  const matchDateUtc = matchData?.matchDateUtc ?? matchData?.date ?? rawPrediction.matchDateUtc ?? rawPrediction.date ?? null;
+  const league = matchData?.league ?? matchData?.competition ?? rawPrediction.league ?? 'Unknown League';
 
   return {
-    id: rawPrediction._id || rawPrediction.id || `${matchData._id || 'unknown'}-${rawPrediction.bucket || 'pred'}`,
-    prediction: predText || 'N/A',
-    odds: chosen?.odds ?? (typeof rawPrediction.odds === 'number' ? rawPrediction.odds : 1.0),
-    // keep original probability too for display
-    marketProb: chosen?.marketProb ?? undefined,
-    market: chosen?.marketKey ?? undefined,
-    marketLabel: chosen?.marketLabel ?? undefined,
-
-    bucket: rawPrediction.bucket,
-    confidence: rawPrediction.confidence,
-    outcomes: rawPrediction.outcomes,
-    status: rawPrediction.status || 'pending',
-    is_vip: rawPrediction.is_vip || false,
-    analysis: rawPrediction.analysis || undefined,
-
-    // flattened match
-    matchId: matchData._id || matchData.id,
-    homeTeam: matchData.homeTeam,
-    awayTeam: matchData.awayTeam,
-    league: matchData.league || matchData.competition || 'Unknown League',
-    matchDateUtc: matchData.matchDateUtc || matchData.date || matchData.datetime,
-  } as Prediction;
+    id,
+    matchId,
+    prediction: predictionText,
+    odds: typeof odds === 'number' ? odds : parseFloat(String(odds)) || 1.0,
+    confidence: rawPrediction.confidence ?? rawPrediction.confidencePct ?? null,
+    bucket: rawPrediction.bucket ?? 'unknown',
+    status: rawPrediction.status ?? 'pending',
+    is_vip: !!rawPrediction.is_vip || rawPrediction.bucket === 'vip',
+    analysis: rawPrediction.analysis ?? rawPrediction.notes ?? null,
+    outcomes: outcomes,
+    homeTeam,
+    awayTeam,
+    league,
+    matchDateUtc,
+  };
 };
 
-/**
- * Normalize a raw match object (used for results/upcoming endpoints)
- */
-const normalizeMatch = (rawMatch: any): Match | null => {
-  if (!rawMatch || !rawMatch._id || !rawMatch.homeTeam || !rawMatch.awayTeam) return null;
+export const normalizeMatch = (rawMatch: any): Match | null => {
+  if (!rawMatch) return null;
 
-  // Normalize nested predictions if present (array)
-  const nestedPredictions = (rawMatch.predictions || [])
-    .map(normalizePrediction)
-    .filter((p): p is Prediction => p !== null);
+  const id = rawMatch._id ?? rawMatch.id ?? String(Math.random().toString(36).slice(2,9));
+  const homeTeam = normalizeTeam(rawMatch.homeTeam);
+  const awayTeam = normalizeTeam(rawMatch.awayTeam);
+  const matchDateUtc = rawMatch.matchDateUtc ?? rawMatch.date ?? null;
+  const league = rawMatch.league ?? rawMatch.competition ?? 'Unknown League';
 
-  // If a top-level prediction exists (result payload), normalize it as well
-  let topLevelPrediction: Prediction | undefined;
+  // Normalize nested predictions (if any)
+  const rawPredictions = rawMatch.predictions ?? [];
+  const predictions = rawPredictions
+    .map((p: any) => normalizePrediction({ ...p, matchId: { _id: id, homeTeam: rawMatch.homeTeam, awayTeam: rawMatch.awayTeam, league, matchDateUtc } }))
+    .filter((p: any) => p !== null);
+
+  // Top-level single prediction (some result endpoints use `prediction` on the match root)
+  let topLevelPrediction = null;
   if (rawMatch.prediction) {
-    const predWithContext = { ...rawMatch.prediction, ...rawMatch };
-    topLevelPrediction = normalizePrediction(predWithContext) || undefined;
+    topLevelPrediction = normalizePrediction({ ...rawMatch.prediction, matchId: { _id: id, homeTeam: rawMatch.homeTeam, awayTeam: rawMatch.awayTeam, league, matchDateUtc }});
   }
 
-  const allPreds = topLevelPrediction ? [topLevelPrediction, ...nestedPredictions] : nestedPredictions;
-
   return {
-    id: rawMatch._id,
-    league: rawMatch.league || rawMatch.competition || 'Unknown League',
-    matchDateUtc: rawMatch.matchDateUtc || rawMatch.date || rawMatch.datetime,
-    status: rawMatch.status,
-    homeTeam: rawMatch.homeTeam,
-    awayTeam: rawMatch.awayTeam,
-    scores: rawMatch.score || rawMatch.scores || rawMatch.result || undefined,
-    predictions: allPreds,
-    prediction: topLevelPrediction,
-    outcome: rawMatch.outcome,
-  } as Match;
+    id,
+    league,
+    matchDateUtc,
+    status: rawMatch.status ?? rawMatch.matchStatus ?? 'scheduled',
+    homeTeam,
+    awayTeam,
+    scores: rawMatch.scores ?? rawMatch.score ?? null,
+    predictions,
+    prediction: topLevelPrediction ?? undefined,
+    outcome: rawMatch.outcome ?? undefined,
+  };
 };
 
-/* ---------- exported fetchers ---------- */
+/** API call wrappers **/
 
-export const getPredictionsByBucket = async (bucket: string): Promise<Prediction[]> => {
+export const getPredictionsByBucket = async (bucket: string): Promise<any[]> => {
   try {
     const res = await api.get(`/predictions/${bucket}`);
-    const predictionGroups: any[] = res.data || [];
-    // API returns groups per match (array of arrays). Flatten but keep match grouping not lost in normalized prediction.
-    const flattened = Array.isArray(predictionGroups) ? predictionGroups.flat() : [];
-    return flattened
+    const data = res.data ?? [];
+
+    // If backend returned grouped arrays (arrays of arrays), flatten them to a single flat array
+    const isGrouped = Array.isArray(data) && data.length > 0 && Array.isArray(data[0]);
+    const flat = isGrouped ? (data as any[]).flat() : (data as any[]);
+
+    const normalized: any[] = flat
       .map(normalizePrediction)
-      .filter((p): p is Prediction => p !== null);
-  } catch (e) {
-    console.error(`Failed to fetch predictions for bucket ${bucket}:`, e);
+      .filter((p): p is any => p !== null);
+
+    return normalized;
+  } catch (err) {
+    console.error('API: getPredictionsByBucket failed', err);
     return [];
   }
 };
@@ -185,10 +219,10 @@ export const getPredictionsByBucket = async (bucket: string): Promise<Prediction
 export const getResults = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/results');
-    const rawMatches: any[] = res.data || [];
-    return rawMatches.map(normalizeMatch).filter((m): m is Match => m !== null);
-  } catch (e) {
-    console.error('Failed to fetch results:', e);
+    const raw: any[] = res.data ?? [];
+    return raw.map(normalizeMatch).filter((m): m is Match => m !== null);
+  } catch (err) {
+    console.error('API: getResults failed', err);
     return [];
   }
 };
@@ -196,10 +230,10 @@ export const getResults = async (): Promise<Match[]> => {
 export const getUpcomingMatches = async (): Promise<Match[]> => {
   try {
     const res = await api.get('/matches/upcoming');
-    const rawMatches: any[] = res.data || [];
-    return rawMatches.map(normalizeMatch).filter((m): m is Match => m !== null);
-  } catch (e) {
-    console.error('Failed to fetch upcoming matches:', e);
+    const raw: any[] = res.data ?? [];
+    return raw.map(normalizeMatch).filter((m): m is Match => m !== null);
+  } catch (err) {
+    console.error('API: getUpcomingMatches failed', err);
     return [];
   }
 };
@@ -208,10 +242,8 @@ export const getMatchSummary = async (matchId: string): Promise<Match | null> =>
   try {
     const res = await api.get(`/summary/${matchId}`);
     return normalizeMatch(res.data);
-  } catch (e) {
-    console.error(`Failed to fetch summary for match ${matchId}:`, e);
+  } catch (err) {
+    console.error(`API: getMatchSummary failed for ${matchId}`, err);
     return null;
   }
 };
-
-export default api;
