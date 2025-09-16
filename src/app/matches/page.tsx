@@ -15,30 +15,38 @@ export default function MatchesPage() {
       try {
         setIsLoading(true);
         const upcomingMatches = await getUpcomingMatches();
-        setMatches(
-          (upcomingMatches || []).sort(
-            (a, b) => new Date(a.matchDateUtc).getTime() - new Date(b.matchDateUtc).getTime()
-          )
+
+        // Sort matches by date
+        const sortedMatches = (upcomingMatches || []).sort(
+          (a, b) => new Date(a.date || a.matchDateUtc).getTime() - new Date(b.date || b.matchDateUtc).getTime()
         );
+
+        setMatches(sortedMatches);
       } catch (error) {
         console.error('Failed to fetch upcoming matches:', error);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchMatches();
   }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold tracking-tight mb-8">Upcoming Matches</h1>
+
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-[260px] w-full" />)}
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-[260px] w-full" />
+          ))}
         </div>
       ) : matches.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {matches.map(match => <MatchInfoCard key={match.id} match={match} />)}
+          {matches.map((match) => (
+            <MatchInfoCard key={match.id} match={match} />
+          ))}
         </div>
       ) : (
         <div className="flex justify-center items-center h-64">
