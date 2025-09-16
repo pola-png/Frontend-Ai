@@ -1,3 +1,4 @@
+// src/components/home/HomePageClient.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -48,7 +49,7 @@ const PredictionCarousel = ({ title, predictions, icon: Icon, link, isLoading, e
             <Carousel opts={{ align: 'start', loop: predictions.length > 2 }} className="w-full">
               <CarouselContent className="-ml-4">
                 {predictions.map((p) => (
-                  <CarouselItem key={p.id || `${p.matchId}-${p.bucket}`} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem key={p.id ?? `${p.matchId}-${p.bucket}`} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                     <div className="p-1 block h-full">
                       <PredictionCard prediction={p} />
                     </div>
@@ -204,4 +205,4 @@ export function HomePageClient() {
       </div>
     </div>
   );
-      }
+}
