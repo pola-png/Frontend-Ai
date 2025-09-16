@@ -10,6 +10,7 @@ export interface Team {
 }
 
 // Represents a fully normalized prediction object, ready for the UI.
+// This is created by combining a raw Prediction with its corresponding Match.
 export interface Prediction {
   id: string;
   matchId: string;

@@ -34,7 +34,7 @@ const normalizePrediction = (rawPrediction: any): Prediction | null => {
   // The match data can either be at the root (for /results) or nested in matchId (for /predictions)
   const matchData = rawPrediction.matchId && typeof rawPrediction.matchId === 'object' ? rawPrediction.matchId : rawPrediction;
 
-  if (!matchData || !matchData.homeTeam || !matchData.awayTeam) {
+  if (!matchData || !matchData.homeTeam || !match-data.awayTeam) {
     return null;
   }
   
