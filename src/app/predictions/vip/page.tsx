@@ -1,3 +1,4 @@
+// src/app/predictions/vip/page.tsx
 'use client';
 
 import PredictionsPageTemplate from '../PredictionsPageTemplate';
