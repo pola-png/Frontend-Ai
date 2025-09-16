@@ -1,58 +1,62 @@
-// src/components/shared/PredictionCard.tsx
 import { useState } from 'react';
 import { Prediction } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
-import { Flame, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Flame, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { GenerateExplanationDialog } from './GenerateExplanationDialog';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 
-const StatusIcon = ({ status }: { status?: Prediction['status'] }) => {
-  switch (status) {
-    case 'won':
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    case 'lost':
-      return <XCircle className="h-5 w-5 text-red-500" />;
-    default:
-      return <Clock className="h-5 w-5 text-gray-500" />;
-  }
+type PredictionCardProps = {
+  prediction: Prediction;
 };
 
-export function PredictionCard({ prediction }: { prediction: Prediction }) {
+export function PredictionCard({ prediction }: PredictionCardProps) {
   if (!prediction) return null;
 
-  const [openDetails, setOpenDetails] = useState(false);
   const {
-    league, matchDateUtc, prediction: predText, odds, status, is_vip, homeTeam, awayTeam, outcomes, confidence, bucket
+    league,
+    matchDateUtc,
+    homeTeam,
+    awayTeam,
+    odds,
+    status,
+    is_vip,
+    prediction: predText,
+    analysis,
+    confidence,
   } = prediction;
+
+  const [expanded, setExpanded] = useState(false);
 
   const homeTeamName = homeTeam?.name || 'Home';
   const awayTeamName = awayTeam?.name || 'Away';
   const homeTeamLogo = homeTeam?.logoUrl;
   const awayTeamLogo = awayTeam?.logoUrl;
 
-  // helpers to render outcomes with implied odds
-  const renderOneXTwo = (o: any) => {
-    const h = o?.home ?? null;
-    const d = o?.draw ?? null;
-    const a = o?.away ?? null;
-    return (
-      <div className="space-y-1 text-sm">
-        {h !== null && <div>Home: {(h*100).toFixed(1)}% — {h > 0 ? (1/h).toFixed(2) : '-.--'}</div>}
-        {d !== null && <div>Draw: {(d*100).toFixed(1)}% — {d > 0 ? (1/d).toFixed(2) : '-.--'}</div>}
-        {a !== null && <div>Away: {(a*100).toFixed(1)}% — {a > 0 ? (1/a).toFixed(2) : '-.--'}</div>}
-      </div>
-    );
+  const displayOdds = odds && odds > 1 ? odds.toFixed(2) : null;
+
+  const toggleExpand = () => setExpanded(!expanded);
+
+  const StatusIcon = ({ status }: { status?: Prediction['status'] }) => {
+    switch (status) {
+      case 'won':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      case 'lost':
+        return <XCircle className="h-5 w-5 text-red-500" />;
+      default:
+        return <Clock className="h-5 w-5 text-gray-500" />;
+    }
   };
 
   return (
     <Card className="flex h-full flex-col bg-card shadow-md transition-shadow duration-300 hover:shadow-xl border-border/20">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium text-muted-foreground truncate">{league || 'Match'}</CardTitle>
+          <CardTitle className="text-base font-medium text-muted-foreground truncate">
+            {league || 'League'}
+          </CardTitle>
           {is_vip && <Badge variant="destructive" className="bg-yellow-500 text-black">VIP</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">
@@ -79,46 +83,37 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
           </div>
         </div>
 
+        {/* Prediction & Odds */}
         <div className="text-center pt-2">
           <p className="text-sm text-muted-foreground">Prediction</p>
           <p className="font-bold text-primary text-lg">{predText || '-'}</p>
-          <div className="text-xs text-muted-foreground mt-1">{bucket ? `(${bucket})` : ''} {confidence ? ` • ${confidence}%` : ''}</div>
+
+          {displayOdds && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Odds: <span className="font-semibold">{displayOdds}</span>
+            </p>
+          )}
+
+          {confidence && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Confidence: <span className="font-semibold">{confidence}%</span>
+            </p>
+          )}
         </div>
 
-        {openDetails && (
-          <div className="mt-2 p-3 bg-muted/30 rounded">
-            <div className="text-sm font-semibold mb-2">Market breakdown</div>
-            {outcomes?.oneXTwo && (
-              <div className="mb-2">
-                <div className="text-xs text-muted-foreground mb-1">1X2</div>
-                {renderOneXTwo(outcomes.oneXTwo)}
-              </div>
-            )}
-
-            {outcomes?.doubleChance && (
-              <div className="mb-2 text-sm">
-                <div className="text-xs text-muted-foreground mb-1">Double Chance</div>
-                {Object.entries(outcomes.doubleChance).map(([k, v]) => (
-                  <div key={k} className="text-sm">
-                    {k}: {(v * 100).toFixed(1)}% — {v > 0 ? (1 / v).toFixed(2) : '-.--'}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {typeof outcomes?.over25 === 'number' && (
-              <div className="mb-1 text-sm">Over 2.5: {(outcomes.over25 * 100).toFixed(1)}% — {outcomes.over25 > 0 ? (1 / outcomes.over25).toFixed(2) : '-.--'}</div>
-            )}
-            {typeof outcomes?.over15 === 'number' && (
-              <div className="mb-1 text-sm">Over 1.5: {(outcomes.over15 * 100).toFixed(1)}% — {outcomes.over15 > 0 ? (1 / outcomes.over15).toFixed(2) : '-.--'}</div>
-            )}
-            {typeof outcomes?.over05 === 'number' && (
-              <div className="mb-1 text-sm">Over 0.5: {(outcomes.over05 * 100).toFixed(1)}% — {outcomes.over05 > 0 ? (1 / outcomes.over05).toFixed(2) : '-.--'}</div>
-            )}
-
-            {typeof outcomes?.bttsYes === 'number' && (
-              <div className="mb-1 text-sm">BTTS Yes: {(outcomes.bttsYes * 100).toFixed(1)}% — {outcomes.bttsYes > 0 ? (1 / outcomes.bttsYes).toFixed(2) : '-.--'}</div>
-            )}
+        {/* Expandable analysis */}
+        {analysis && (
+          <button
+            onClick={toggleExpand}
+            className="flex items-center justify-center gap-1 mt-2 text-sm text-primary hover:underline"
+          >
+            {expanded ? 'Hide Details' : 'View Details'}
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+        )}
+        {expanded && analysis && (
+          <div className="mt-2 text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none text-left break-words">
+            {analysis.split('\n').map((p, i) => <p key={i}>{p}</p>)}
           </div>
         )}
       </CardContent>
@@ -126,16 +121,15 @@ export function PredictionCard({ prediction }: { prediction: Prediction }) {
       <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
         <div className="flex items-center gap-2">
           <Flame className="h-5 w-5 text-accent" />
-          <span className="font-bold text-lg">{odds ? Number(odds).toFixed(2) : '-.--'}</span>
+          {displayOdds && <span className="font-bold text-lg">{displayOdds}</span>}
           <span className="text-sm text-muted-foreground">Odds</span>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setOpenDetails(v => !v)}>{openDetails ? 'Hide' : 'Details'}</Button>
           <GenerateExplanationDialog prediction={prediction} />
           <StatusIcon status={status} />
         </div>
       </CardFooter>
     </Card>
   );
-}
+      }
