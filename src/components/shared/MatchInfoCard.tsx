@@ -46,7 +46,7 @@ export function MatchInfoCard({ match }: MatchInfoCardProps) {
             <h4 className="text-sm font-semibold mb-2 text-center text-primary">AI Predictions</h4>
             <div className="flex flex-wrap justify-center gap-2">
               {predictions.map(p => p && (
-                <Badge key={p._id} variant="secondary" className="flex items-center gap-1">
+                <Badge key={p.id} variant="secondary" className="flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3 text-green-500" />
                    {p.prediction}
                   {p.bucket && <span className="font-normal opacity-75">({p.bucket})</span>}

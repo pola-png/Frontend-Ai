@@ -4,14 +4,14 @@
 // into these shapes.
 
 export interface Team {
-  _id: string;
+  id: string;
   name: string;
   logoUrl?: string;
 }
 
 // Represents a fully normalized prediction object, ready for the UI.
 export interface Prediction {
-  _id: string;
+  id: string;
   matchId: string;
   prediction: string; // "Home Win", "Draw", "Away Win", etc.
   odds: number;       // The odds for that prediction
@@ -31,7 +31,7 @@ export interface Prediction {
 
 // Represents a fully normalized match object, ready for the UI.
 export interface Match {
-  _id: string;
+  id: string;
   league?: string;
   matchDateUtc: string;
   status: 'scheduled' | 'upcoming' | 'tba' | 'finished';

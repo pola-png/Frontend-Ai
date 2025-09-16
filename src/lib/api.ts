@@ -41,7 +41,7 @@ const normalizePrediction = (rawPrediction: any): Prediction | null => {
   const { prediction, odds } = getPredictionDetailsFromOutcomes(rawPrediction.outcomes);
 
   return {
-    _id: rawPrediction._id,
+    id: rawPrediction._id,
     prediction: rawPrediction.prediction || prediction,
     odds: rawPrediction.odds || odds,
     bucket: rawPrediction.bucket,
@@ -89,7 +89,7 @@ const normalizeMatch = (rawMatch: any): Match | null => {
   const allPredictions = topLevelPrediction ? [topLevelPrediction, ...nestedPredictions] : nestedPredictions;
 
   return {
-    _id: rawMatch._id,
+    id: rawMatch._id,
     league: rawMatch.league,
     matchDateUtc: rawMatch.matchDateUtc,
     status: rawMatch.status,
